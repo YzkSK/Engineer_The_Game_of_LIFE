@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>エンジニア人生 全図</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1+Code:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* トークンは index.html と同じ(レガシー案件の色だけ追加) */
+  :root {
+    --desk: #e4e8da; --panel: #fbfcf5; --panel-2: #eef1e4;
+    --frame: #2d5a43; --ink: #1b2620; --muted: #66756b; --title: #7a4e00;
+    --sel: #2d5a43; --sel-ink: #fbfcf5; --drop: #c3cab4;
+    --bar: #2d5a43; --bar-ink: #fbfcf5;
+    --job: #8fdcaa; --fire: #ffaa9e; --study: #a9c9ff; --change: #dcb6ff; --event: #ffdb70; --legacy: #d9b48c;
+    --special: #1b2620; --tile-ink: #1b2620; --special-ink: #fbfcf5;
+    --t-red: #b3261e; --t-green: #1d7a46; --t-magenta: #7b3fb0; --t-cyan: #0b6f86;
+    --water: #8fbde0; --water-line: #3f7fae;
+    --p1: #c2347a; --p2: #0b7f95; --p3: #4f8a0b; --p4: #c46a0a;
+    --dot: "DotGothic16", "M PLUS 1 Code", monospace;
+    font-family: "M PLUS 1 Code", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --desk: #0b1a3d; --panel: #17357f; --panel-2: #11295f;
+      --frame: #9cd6ff; --ink: #eef3ff; --muted: #9fb0d6; --title: #ffe066;
+      --sel: #9cd6ff; --sel-ink: #0b1a3d; --drop: #050c1e;
+      --bar: #c8d2ea; --bar-ink: #0b1a3d;
+      --job: #4fd27a; --fire: #ff6b5e; --study: #8cc4ff; --change: #d99bff; --event: #ffd84d; --legacy: #d7a676;
+      --special: #f2f4fa; --tile-ink: #0b1a3d; --special-ink: #0b1a3d;
+      --t-red: #ff9a90; --t-green: #7ee6a0; --t-magenta: #e6b8ff; --t-cyan: #9cd6ff;
+      --water: #2a5fb8; --water-line: #8cc4ff;
+      --p1: #ff8fc7; --p2: #7ef0ff; --p3: #c4f27a; --p4: #ffb766;
+    }
+  }
+  :root[data-theme="dark"] {
+    --desk: #0b1a3d; --panel: #17357f; --panel-2: #11295f;
+    --frame: #9cd6ff; --ink: #eef3ff; --muted: #9fb0d6; --title: #ffe066;
+    --sel: #9cd6ff; --sel-ink: #0b1a3d; --drop: #050c1e;
+    --bar: #c8d2ea; --bar-ink: #0b1a3d;
+    --job: #4fd27a; --fire: #ff6b5e; --study: #8cc4ff; --change: #d99bff; --event: #ffd84d; --legacy: #d7a676;
+    --special: #f2f4fa; --tile-ink: #0b1a3d; --special-ink: #0b1a3d;
+    --t-red: #ff9a90; --t-green: #7ee6a0; --t-magenta: #e6b8ff; --t-cyan: #9cd6ff;
+    --water: #2a5fb8; --water-line: #8cc4ff;
+    --p1: #ff8fc7; --p2: #7ef0ff; --p3: #c4f27a; --p4: #ffb766;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; color: var(--ink); font-size: 14px; line-height: 1.65;
+    background: radial-gradient(circle, var(--panel-2) 1px, transparent 1.5px) 0 0 / 8px 8px, var(--desk);
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--title); outline-offset: 2px; }
+
+  .page { max-width: 1560px; margin: 0 auto; padding: 28px 16px 40px; display: grid; gap: 22px; }
+  .win { position: relative; min-width: 0; background: var(--panel); border: 4px double var(--frame); box-shadow: 8px 8px 0 var(--drop); }
+  .win-t { position: absolute; top: -.85em; left: 50%; transform: translateX(-50%); margin: 0; padding: 0 1ch; background: var(--panel); color: var(--title); font: 400 16px/1.4 var(--dot); white-space: nowrap; }
+  .win-b { padding: 20px 18px 16px; }
+  .btn { border: 0; padding: 7px 16px; cursor: pointer; font-weight: 700; background: var(--title); color: var(--sel-ink); box-shadow: 4px 4px 0 var(--drop); white-space: nowrap; }
+  .btn.sub { background: var(--bar); color: var(--bar-ink); }
+  .btn:active { transform: translate(4px, 4px); box-shadow: none; }
+  .btn:disabled { opacity: .55; cursor: wait; }
+
+  /* ---------- 地図 ---------- */
+  .map-scroll { overflow-x: auto; padding: 0 10px 10px 0; }
+  .map {
+    position: relative; min-width: 940px; aspect-ratio: 1400 / 900; container-type: inline-size;
+    background: var(--panel-2); border: 4px double var(--frame); box-shadow: 6px 6px 0 var(--drop);
+  }
+  .map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .grid line { stroke: var(--frame); stroke-opacity: .1; }
+  .grid text { fill: var(--muted); font: 12px "M PLUS 1 Code", monospace; }
+  .region .edge { fill: none; stroke-width: 2; stroke-dasharray: 7 6; }
+  .region.cur .edge { stroke: var(--title) !important; stroke-width: 3.5; stroke-dasharray: none; }
+  .label text { font: 24px var(--dot); fill: var(--ink); }
+  .label tspan { font: 13px "M PLUS 1 Code", monospace; fill: var(--muted); }
+  .label.cur text { fill: var(--title); }
+  .landmark text { font: 11px "M PLUS 1 Code", monospace; fill: var(--ink); paint-order: stroke; stroke: var(--panel-2); stroke-width: 3px; }
+  .water { fill: none; stroke: var(--water); stroke-linecap: round; }
+  .water-line { fill: none; stroke: var(--water-line); stroke-width: 1.5; stroke-dasharray: 6 10; }
+  .sea { fill: var(--water); }
+  .roads path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .roads .edge { stroke: var(--frame); stroke-width: 20; }
+  .roads .base { stroke: var(--panel); stroke-width: 12; }
+  .roads .dash { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 9; }
+  .roads .rail { stroke: var(--ink); stroke-width: 32; stroke-linecap: butt; }
+  .roads .deck { stroke: var(--bar); stroke-width: 27; stroke-linecap: butt; }
+  .roads .plank { stroke: var(--muted); stroke-width: 27; stroke-dasharray: 1.5 6; stroke-linecap: butt; opacity: .6; }
+  .gate .post { fill: var(--t-red); }
+  .gate .beam { stroke: var(--t-red); stroke-width: 5; }
+  .gate text, .sign text { font: 12px var(--dot); fill: var(--ink); }
+  .gate rect.plate, .sign rect.plate { fill: var(--panel); stroke: var(--ink); stroke-width: 1.5; }
+  .sign .pole { stroke: var(--muted); stroke-width: 3; }
+  .cartouche .box { fill: var(--panel); stroke: var(--frame); stroke-width: 2; }
+  .cartouche .box2 { fill: none; stroke: var(--frame); stroke-width: 1; }
+  .cartouche .t { font: 32px var(--dot); fill: var(--ink); }
+  .cartouche .s { font: 13px "M PLUS 1 Code", monospace; fill: var(--muted); }
+  .cartouche .n { font: 18px var(--dot); fill: var(--ink); }
+  .legend text { font: 12px "M PLUS 1 Code", monospace; fill: var(--ink); }
+  .legend .h { font: 16px var(--dot); }
+
+  .tile {
+    position: absolute; z-index: 2; width: 2.9%; aspect-ratio: 1 / 1; transform: translate(-50%, -50%);
+    display: grid; place-items: center; background: var(--c); color: var(--tile-ink); cursor: help;
+    box-shadow: 3px 3px 0 var(--drop); font: 400 1.05cqw/1 var(--dot);
+  }
+  .tile.special { width: 3.4%; background: var(--special); color: var(--special-ink); box-shadow: 3px 3px 0 var(--drop), 0 0 0 2px var(--panel-2), 0 0 0 4px var(--special); }
+  .tile.t-ai { background: repeating-linear-gradient(45deg, var(--change) 0 5px, color-mix(in srgb, var(--change) 65%, var(--panel)) 5px 10px); color: var(--tile-ink); box-shadow: 3px 3px 0 var(--drop), 0 0 0 2px var(--panel-2), 0 0 0 4px var(--change); }
+  .tile.t-goal { background: repeating-conic-gradient(var(--special) 0 25%, var(--special-ink) 0 50%) 0 0 / 10px 10px; }
+  .tile.t-goal span { background: var(--special); color: var(--special-ink); padding: 0 3px; }
+  .tile.t-legacy { box-shadow: 3px 3px 0 var(--drop), inset 0 0 0 2px color-mix(in srgb, var(--tile-ink) 45%, transparent); }
+  .tile.passed::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle, var(--panel) 1px, transparent 1.4px) 0 0 / 5px 5px; opacity: .65; }
+  .tile .no { position: absolute; top: -1.05cqw; left: 0; font: 400 .72cqw/1 "M PLUS 1 Code", monospace; color: var(--muted); }
+  .tile:hover, .tile.on { outline: 2px solid var(--title); outline-offset: 2px; z-index: 5; }
+
+  .pieces { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+  /* 地図ピン: 先端がマスの中心を指す */
+  .piece {
+    position: absolute; width: 44px; height: 57px; margin: -57px 0 0 -22px;
+    transition: left .2s steps(2), top .2s steps(2), transform .15s;
+    filter: drop-shadow(3px 3px 0 var(--drop));
+  }
+  .piece .head {
+    position: absolute; left: 0; top: 0; width: 44px; height: 44px; border-radius: 50%;
+    display: grid; place-items: center; background: var(--pc); color: var(--sel-ink);
+    border: 3px solid var(--ink); font: 400 22px/1 var(--dot);
+  }
+  .piece .tip-end {
+    position: absolute; left: 50%; top: 39px; transform: translateX(-50%);
+    border: 11px solid transparent; border-top: 18px solid var(--ink); border-bottom: 0;
+  }
+  .piece .name {
+    position: absolute; left: 50%; bottom: calc(100% + 4px); transform: translateX(-50%); white-space: nowrap;
+    padding: 1px 7px; font: 700 12px/1.5 "M PLUS 1 Code", monospace;
+    background: var(--ink); color: var(--panel);
+  }
+  .piece.turn { z-index: 10 !important; }
+  .piece.turn .name { background: var(--title); color: var(--sel-ink); }
+  .piece.turn .head { animation: bob 1s steps(2) infinite; }
+  .piece.hop { animation: hop .2s steps(2); }
+  .piece.rest .head { opacity: .6; }
+  .piece.rest .name::after { content: " 休職中"; color: var(--t-red); }
+  .piece.focus { transform: scale(1.3); z-index: 11 !important; }
+  @keyframes bob { 50% { transform: translateY(-4px); } }
+  @keyframes hop { 50% { transform: translateY(-14px); } }
+
+  .tip {
+    position: absolute; z-index: 10; pointer-events: none; display: none; min-width: 190px; max-width: 260px;
+    padding: 8px 10px; background: var(--panel); border: 3px double var(--frame); box-shadow: 4px 4px 0 var(--drop);
+    font-size: 12px; line-height: 1.55;
+  }
+  .tip.show { display: block; }
+  .tip b { font: 400 16px/1.3 var(--dot); display: block; }
+  .tip .m { color: var(--muted); }
+
+
+  /* ---------- ステータス(index.html と同じ部品) ---------- */
+  .muted { color: var(--muted); } .red { color: var(--t-red); } .green { color: var(--t-green); } .magenta { color: var(--t-magenta); }
+  .menubar { display: flex; flex-wrap: wrap; gap: 0 22px; align-items: center; padding: 4px 14px; background: var(--bar); color: var(--bar-ink); font-size: 13px; }
+  .menubar .era { font: 400 15px/1.6 var(--dot); }
+  .menubar .sp { flex: 1; }
+  .meters { display: grid; grid-template-columns: repeat(3, max-content); justify-content: space-between; gap: 2px 32px; }
+  .mrow { display: grid; grid-template-columns: 7.5em max-content 3em 2.5em; justify-content: start; gap: 12px; align-items: center; white-space: nowrap; }
+  .mrow .bar { overflow: hidden; letter-spacing: -.04em; }
+  .mrow .v, .mrow .d { text-align: right; }
+  .mrow .d { font-weight: 700; }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; align-items: start; }
+  .main > .win > .win-b { padding: 20px 12px 12px; }
+  .pl { padding: 8px 16px 10px; }
+  .pl + .pl { border-top: 1px solid color-mix(in srgb, var(--frame) 35%, transparent); }
+  .pl.turn { background: color-mix(in srgb, var(--sel) 16%, var(--panel)); }
+  .pl.resting { opacity: .6; }
+  .pl-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .pl-head .chip { width: 22px; height: 22px; display: grid; place-items: center; font: 400 13px/1 var(--dot); background: var(--pc); color: var(--sel-ink); flex: none; }
+  .pl-head .name { font: 400 16px/1.3 var(--dot); }
+  .pl-head .route { font-size: 11px; color: var(--muted); }
+  .pl-head .state { margin-left: auto; font-size: 11px; font-weight: 700; padding: 0 6px; white-space: nowrap; }
+  .pl.turn .state { background: var(--title); color: var(--sel-ink); }
+  .pl .mrow { grid-template-columns: 4.5em max-content 4.5em; gap: 8px; font-size: 12px; }
+  .pl .where { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .stack { font-size: 11px; color: var(--muted); }
+  .stack span { color: var(--ink); }
+  .flash { animation: flash .6s steps(2) 2; }
+  @keyframes flash { 50% { background: color-mix(in srgb, var(--title) 35%, transparent); } }
+
+  .bottom { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 22px; align-items: stretch; }
+  .win.focus { border-color: var(--title); }
+  .act { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px 22px; align-items: center; }
+  .die {
+    width: 64px; height: 64px; padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+    background: #f7f7f2; box-shadow: 5px 5px 0 var(--drop);
+  }
+  .die i { width: 10px; height: 10px; place-self: center; background: #10141c; visibility: hidden; }
+  .die i.on { visibility: visible; }
+  .die.one i.on { width: 14px; height: 14px; background: #d6342b; }
+  .die.rolling { animation: tumble .24s steps(2) infinite; }
+  @keyframes tumble { 50% { transform: translate(-3px, -6px) rotate(-8deg); } }
+  .prompt { overflow-wrap: anywhere; }
+  .prompt .ps { color: var(--t-green); font-weight: 700; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .hand { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 12px; }
+  .check { border: 0; background: none; padding: 0; text-align: left; cursor: pointer; }
+  .check::before { content: "[ ] "; color: var(--muted); }
+  .check.on::before { content: "[x] "; color: var(--title); }
+  .check b { color: var(--t-magenta); }
+  .key { display: inline-block; padding: 0 5px; margin-left: 6px; font-size: 11px; font-weight: 500; border: 1px solid currentColor; opacity: .75; }
+
+  .log { font-size: 12px; max-height: 168px; overflow: auto; }
+  .log div { display: grid; grid-template-columns: 4ch 6.5ch minmax(0, 1fr); gap: 10px; line-height: 23px; }
+  .lv { font-weight: 700; text-align: center; color: var(--tile-ink); align-self: center; line-height: 17px; }
+  .lv.error { background: var(--fire); } .lv.warn { background: var(--event); }
+  .lv.ai { background: var(--change); } .lv.info { background: var(--study); } .lv.money { background: var(--legacy); }
+
+  .overlay { position: fixed; inset: 0; z-index: 40; display: none; place-items: center; padding: 20px; background: color-mix(in srgb, var(--desk) 70%, transparent); }
+  .overlay.open { display: grid; }
+  .overlay .win { width: min(460px, 100%); border-color: var(--title); animation: open .18s steps(3); }
+  @keyframes open { from { transform: scale(.9); opacity: 0; } }
+  .card-name { margin: 0 0 8px; font: 400 30px/1.25 var(--dot); }
+  .card-text { margin: 0 0 16px; }
+  .diff { font-size: 13px; background: var(--panel-2); padding: 6px 0; }
+  .diff div { padding: 0 12px; white-space: pre; overflow-x: auto; }
+  .diff .hunk { color: var(--muted); }
+  .diff .del { color: var(--t-red); }
+  .diff .add { color: var(--t-green); }
+  .card-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
+
+  @media (max-width: 1180px) {
+    .main, .bottom { grid-template-columns: minmax(0, 1fr); }
+    .players-b { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); }
+    .pl + .pl { border-top: 0; }
+    .meters { grid-template-columns: repeat(2, max-content); justify-content: start; }
+  }
+  @media (max-width: 700px) {
+    .meters { grid-template-columns: minmax(0, 1fr); }
+    .mrow { grid-template-columns: 6.5em max-content 2.8em 2.2em; gap: 8px; font-size: 12px; }
+    .act { grid-template-columns: auto minmax(0, 1fr); }
+    .hand, .act > .btn { grid-column: 1 / -1; }
+    .act > .btn { justify-self: start; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="menubar">
+    <span class="era" id="eraName"></span>
+    <span id="eraBar"></span>
+    <span class="sp"></span>
+    <span id="turnNo"></span>
+    <span>部屋 K7QX</span>
+    <span>4人</span>
+  </div>
+
+  <section class="win">
+    <h2 class="win-t">技術の人気度</h2>
+    <div class="win-b meters" id="trend"></div>
+  </section>
+
+  <div class="main">
+    <section class="win">
+      <h2 class="win-t">エンジニア人生 全図</h2>
+      <div class="win-b">
+        <div class="map-scroll">
+          <div class="map" id="map">
+            <svg id="svg" viewBox="0 0 1400 900" aria-hidden="true"></svg>
+            <div id="tiles"></div>
+            <div class="pieces" id="pieces"></div>
+            <div class="tip" id="tip"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="win">
+      <h2 class="win-t">プレイヤー</h2>
+      <div class="players-b" id="players" style="padding-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="bottom">
+    <section class="win focus">
+      <h2 class="win-t">あなたの番</h2>
+      <div class="win-b act">
+        <div class="die" id="dice" aria-label="サイコロ"></div>
+        <div>
+          <div class="prompt"><span class="ps">you@life</span>:~/<span id="cwd">ai-lab</span>$ <span id="cmd">./roll</span></div>
+          <div class="hint">AIペアプロを使うと出た目に +2。ただし、その回はスキルが伸びません。</div>
+        </div>
+        <button class="btn" id="roll">サイコロを振る<span class="key">Enter</span></button>
+        <div class="hand">
+          <button class="check" id="aiCard"><b>AIペアプロ</b> を使う</button>
+          <span class="muted">止まったマスの効果は、ステータスとログにすぐ反映されます</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="win">
+      <h2 class="win-t">ログ</h2>
+      <div class="win-b log" id="log">
+        <div><span class="muted">T14</span><span class="lv error">ERROR</span><span><b style="color:var(--p2)">ミナミ</b> が炎上マスに止まった。メンタル −2、評判 +1</span></div>
+        <div><span class="muted">T14</span><span class="lv warn">WARN</span><span><b style="color:var(--p4)">ユイ</b> は休職中。あと1回休み</span></div>
+        <div><span class="muted">T13</span><span class="lv ai">AI</span><span>AI研究所に入り、AI が登場した。これから AI カードが手に入る</span></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <section class="win" role="dialog" aria-labelledby="cardName">
+    <h2 class="win-t">流行カード</h2>
+    <div class="win-b">
+      <h3 class="card-name" id="cardName"></h3>
+      <p class="card-text" id="cardText"></p>
+      <div class="diff" id="cardDiff"></div>
+      <div class="card-actions"><button class="btn" id="closeCard">閉じる<span class="key">Esc</span></button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const W = 1400, H = 900;
+  const PER_ERA = 18;  // 1マス = 4か月
+
+  // ---- マスとデータ ----
+  const TYPES = {
+    job:    { g: "¥+",  nm: "案件",         c: "job",    fx: "お金とスキルが増える。持っている技術の人気度で報酬が変わる" },
+    fire:   { g: "!!",  nm: "炎上",         c: "fire",   fx: "メンタルが減る。乗り切ると評判が上がる" },
+    study:  { g: "{}",  nm: "勉強",         c: "study",  fx: "お金を払ってスキルを上げる。新しい技術を覚えられる" },
+    change: { g: "⇄",   nm: "転職",         c: "change", fx: "別のルートに移れる。評判が高いほど良い会社に入れる" },
+    event:  { g: "??",  nm: "イベント",     c: "event",  fx: "イベントカードを1枚引く" },
+    legacy: { g: "$$",  nm: "レガシー案件", c: "legacy", fx: "古いシステムを持っている人だけ大もうけ。持っていなければ何も起きない" },
+    start:  { g: ">_",  nm: "ふりだし",     c: "special", special: true, fx: "新卒で入社。ここから30年が始まる" },
+    ai:     { g: "AI",  nm: "AI登場",       c: "change",  special: true, fx: "必ず止まる。ここから AI カードが手に入るようになる" },
+    branch: { g: "├┬",  nm: "分かれ道",     c: "special", special: true, fx: "マネージャー / スペシャリスト / フリーランス / 起業 から道を選ぶ" },
+    goal:   { g: "EOF", nm: "上がり",       c: "special", special: true, fx: "定年。満足度を計算して順位が決まる" },
+  };
+  const ERAS = [
+    { name: "新卒期",     place: "研修センター", line: "job",
+      sq: ["start","study","job","event","study","fire","job","event","study","job","fire","job","event","study","job","fire","event","job"] },
+    { name: "若手期",     place: "案件街",       line: "study",
+      sq: ["job","fire","event","job","study","change","fire","job","event","fire","job","study","job","event","fire","study","change","job"] },
+    { name: "AI登場",     place: "AI研究所",     line: "change",
+      sq: ["ai","event","job","branch","study","job","fire","event","job","study","fire","job","event","job","fire","study","event","job"] },
+    { name: "ベテラン期", place: "技術の山脈",   line: "event",
+      sq: ["job","event","legacy","fire","change","job","study","event","fire","job","legacy","event","job","fire","study","event","legacy","job"] },
+    { name: "終盤",       place: "上がりの港",   line: "fire",
+      sq: ["job","event","study","fire","job","event","legacy","job","fire","event","job","study","event","fire","job","legacy","event","goal"] },
+  ];
+  const TOTAL = ERAS.length * PER_ERA;
+  const CURRENT_ERA = 2;
+  const START_POS = 39;
+  const PLAYERS = [
+    { nm: "あなた", c: "--p1", pos: START_POS, turn: true, route: "スペシャリスト", money: 320, skill: 14, mental: 6, rep: 8, techs: ["Web", "インフラ"] },
+    { nm: "ミナミ", c: "--p2", pos: 44, route: "マネージャー", money: 410, skill: 9, mental: 3, rep: 11, techs: ["スマホアプリ", "データ分析"] },
+    { nm: "ケン",   c: "--p3", pos: 32, route: "会社員 / CPU", money: 180, skill: 18, mental: 8, rep: 5, techs: ["古いシステム"] },
+    { nm: "ユイ",   c: "--p4", pos: 35, resting: true, route: "会社員 / CPU", money: 240, skill: 11, mental: 0, rep: 7, techs: ["Web"] },
+  ];
+  const TECHS = [
+    { nm: "Web", v: 3, d: -1 },
+    { nm: "スマホアプリ", v: 3, d: 0 },
+    { nm: "インフラ", v: 5, d: +2 },
+    { nm: "データ分析", v: 4, d: +1 },
+    { nm: "古いシステム", v: 1, d: -1 },
+  ];
+  const TREND_CARDS = [
+    { nm: "クラウド大移行", text: "オンプレからの引っ越しラッシュ。インフラが分かる人は引っぱりだこ。", fx: [["インフラ", +1], ["古いシステム", -1]] },
+    { nm: "スマホ離れ", text: "新しいアプリが出なくなってきた。Web に人が戻っている。", fx: [["スマホアプリ", -1], ["Web", +1]] },
+    { nm: "データ分析ブーム", text: "どの会社もダッシュボードを作りたがる。分析できる人が足りない。", fx: [["データ分析", +1], ["Web", -1]] },
+    { nm: "基幹システムの大障害", text: "誰も触れない古いシステムが止まった。直せる人は神扱い。", fx: [["古いシステム", +2]] },
+  ];
+  let turn = 14;
+  const typeAt = (i) => ERAS[Math.floor(i / PER_ERA)].sq[i % PER_ERA];
+  const eraOf = (i) => Math.floor(i / PER_ERA);
+  const yearOf = (i) => Math.floor(i / 3) + 1;
+  const me = () => PLAYERS[0];
+  const $ = (s) => document.querySelector(s);
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // ---- 地形 ----
+  // 時代ごとの道(1本ずつ)。前の道の終点が次の道の始点
+  const SEGS = [
+    "M 90 820 C 200 850, 380 850, 400 790 S 120 740, 110 690 S 300 620, 410 640 S 330 540, 250 500",
+    "M 250 500 C 170 480, 80 460, 90 410 S 390 390, 400 330 S 110 290, 100 230 S 260 110, 380 120 S 450 220, 480 260",
+    "M 480 260 C 540 300, 530 420, 540 520 S 600 650, 700 640 S 860 600, 850 540 S 640 500, 650 430 S 850 400, 860 330 S 700 250, 760 220 S 900 230, 930 260",
+    "M 930 260 C 990 250, 1000 160, 1000 120 S 1200 80, 1300 110 S 1320 220, 1200 220 S 1000 280, 1010 340 S 1250 330, 1310 380 S 1200 460, 1150 470",
+    "M 1150 470 C 1100 500, 990 520, 1000 580 S 1240 600, 1250 660 S 1080 700, 1010 750 S 1080 850, 1180 830 S 1230 800, 1240 790",
+  ];
+  // エリアの区画 [x, y, 幅, 高さ] と地面の模様、目印
+  const REGIONS = [
+    { rect: [40, 520, 420, 345],  pat: "grass",   marks: [["school", "研修棟"], ["office", "本社"]], trees: 9 },
+    { rect: [40, 55, 420, 430],   pat: "city",    marks: [["office", "客先ビル"], ["tower", "客先タワー"], ["server", "データセンター"]], trees: 0 },
+    { rect: [505, 205, 395, 480], pat: "circuit", marks: [["gpu", "GPUクラスタ"], ["server", "研究棟"]], trees: 0 },
+    { rect: [945, 55, 415, 385],  pat: "slope",   marks: [["mountain", "レガシー峠"], ["mountain", "クラウド峰"]], trees: 4 },
+    { rect: [945, 475, 415, 390], pat: "waves",   marks: [["lighthouse", "引退の灯台"], ["ship", "定年丸"]], trees: 0 },
+  ];
+  const RIVERS = [
+    "M 470 0 C 490 120, 455 220, 482 330 S 470 520, 488 610 S 470 800, 482 900",
+    "M 928 0 C 915 150, 935 300, 922 470 S 930 700, 905 900",
+  ];
+  const SEA = "M 1400 600 C 1340 660, 1370 760, 1300 820 S 1265 880, 1250 900 L 1400 900 Z";
+
+  // ---- ドット絵 ----
+  const PAL = {
+    g: "var(--t-green)", t: "#8a5a2b", k: "var(--muted)", w: "var(--panel-2)", y: "var(--title)", d: "var(--drop)",
+    r: "var(--t-red)", s: "#f4f6fb", m: "var(--t-magenta)", c: "var(--t-cyan)", i: "var(--ink)", o: "#7b8494", b: "var(--frame)",
+  };
+  const SPRITES = {
+    tree:       ["..g..", ".ggg.", "ggggg", ".ggg.", "ggggg", "..t..", "..t.."],
+    office:     ["kkkkkkk", "kwkwkyk", "kkkkkkk", "kykwkwk", "kkkkkkk", "kwkwkyk", "kkkkkkk", "kwkykwk", "kkkkkkk", "kkkddkk"],
+    tower:      ["...i...", "..kkk..", "..kyk..", "..kkk..", ".kwkwk.", ".kkkkk.", ".kykwk.", ".kkkkk.", ".kwkyk.", ".kkkkk.", ".kwkwk.", ".kkkkk.", ".kkddk."],
+    school:     ["....r....", "....rr...", "....i....", "kkkkkkkkk", "kwkwkwkwk", "kkkkkkkkk", "kwkwddkwk", "kkkkddkkk"],
+    server:     ["ooooooo", "odgdddo", "ooooooo", "oddrddo", "ooooooo", "odgdcdo", "ooooooo", "o.....o"],
+    gpu:        [".k.k.k.k.", "kkkkkkkkk", ".kmmmmmk.", "kkm...mkk", ".km.c.mk.", "kkm...mkk", ".kmmmmmk.", "kkkkkkkkk", ".k.k.k.k."],
+    mountain:   ["......s......", ".....sss.....", "....sskkk....", "...kkkkkkk...", "..kkkkkkkkk..", ".kkkkkkkkkkk.", "kkkkkkkkkkkkk"],
+    lighthouse: ["y...y...y", ".y..y..y.", "...yyy...", "...iii...", "...rrr...", "...sss...", "...rrr...", "...sss...", "...rrr...", "...sss...", "..kkkkk..", ".kkkkkkk."],
+    ship:       [".....i.....", "....ii.....", "...iii.....", "..iiii.....", "kkkkkkkkkkk", ".krkkkkkkk.", "..kkkkkkk.."],
+  };
+  function sprite(name, x, y, s) {
+    const rows = SPRITES[name], w = rows[0].length, h = rows.length;
+    let r = "";
+    rows.forEach((row, j) => [...row].forEach((ch, i) => {
+      if (ch !== ".") r += `<rect x="${i}" y="${j}" width="1.02" height="1.02" style="fill:${PAL[ch]}"/>`;
+    }));
+    return `<g transform="translate(${x - w * s / 2} ${y - h * s}) scale(${s})" shape-rendering="crispEdges">${r}</g>`;
+  }
+  const spriteBox = (name, x, y, s) => {
+    const rows = SPRITES[name];
+    return [x - rows[0].length * s / 2, y - rows.length * s, rows[0].length * s, rows.length * s];
+  };
+
+  // ---- 地図を組み立てる ----
+  const PTS = [];
+  const NS = "http://www.w3.org/2000/svg";
+  const distToBox = ([px, py], [bx, by, bw, bh]) =>
+    Math.hypot(Math.max(bx - px, 0, px - bx - bw), Math.max(by - py, 0, py - by - bh));
+  const boxesOverlap = (a, b, pad = 0) =>
+    a[0] < b[0] + b[2] + pad && b[0] < a[0] + a[2] + pad && a[1] < b[1] + b[3] + pad && b[1] < a[1] + a[3] + pad;
+  let seed = 11;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+  function build() {
+    const svg = $("#svg");
+    const layers = ["defs", "grid", "regions", "water", "decor", "roads", "gates", "labels", "frame"];
+    svg.innerHTML = layers.map(l => l === "defs" ? "<defs></defs>" : `<g class="${l}"></g>`).join("");
+    const L = (name) => svg.querySelector(name === "defs" ? "defs" : "." + name);
+
+    // 地面の模様
+    L("defs").innerHTML = `
+      <pattern id="p-grass" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="1.3" style="fill:var(--t-green)" opacity=".35"/><circle cx="12" cy="11" r="1" style="fill:var(--t-green)" opacity=".3"/></pattern>
+      <pattern id="p-city" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0 0H40M0 0V40" style="stroke:var(--frame)" stroke-width="2" opacity=".14"/><rect x="8" y="8" width="10" height="10" style="fill:var(--frame)" opacity=".07"/><rect x="24" y="22" width="10" height="12" style="fill:var(--frame)" opacity=".07"/></pattern>
+      <pattern id="p-circuit" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M0 12H20V30H48M30 0V18H48" fill="none" style="stroke:var(--t-magenta)" stroke-width="1.5" opacity=".25"/><circle cx="20" cy="30" r="2.5" style="fill:var(--t-magenta)" opacity=".3"/><circle cx="30" cy="18" r="2.5" style="fill:var(--t-magenta)" opacity=".3"/></pattern>
+      <pattern id="p-slope" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)"><path d="M0 0V14" style="stroke:var(--title)" stroke-width="1.2" opacity=".2"/></pattern>
+      <pattern id="p-waves" width="36" height="20" patternUnits="userSpaceOnUse"><path d="M2 12 Q 8 6, 14 12 T 26 12" fill="none" style="stroke:var(--water-line)" stroke-width="1.5" opacity=".45"/></pattern>`;
+
+    // 方眼と座標
+    let grid = "";
+    for (let x = 100; x < W; x += 100) grid += `<line x1="${x}" y1="0" x2="${x}" y2="${H}"/>`;
+    for (let y = 100; y < H; y += 100) grid += `<line x1="0" y1="${y}" x2="${W}" y2="${y}"/>`;
+    "ABCDEFGHIJKLMN".split("").forEach((c, i) => grid += `<text x="${i * 100 + 50}" y="18" text-anchor="middle">${c}</text>`);
+    for (let i = 0; i < 9; i++) grid += `<text x="10" y="${i * 100 + 56}">${i + 1}</text>`;
+    L("grid").innerHTML = grid;
+
+    // 川と海
+    L("water").innerHTML =
+      `<path class="sea" d="${SEA}"/>` +
+      RIVERS.map(d => `<path class="water river" d="${d}" stroke-width="30"/><path class="water-line" d="${d}"/>`).join("");
+
+    // 道(まだ縁だけ)。マスの位置を測るために、先に点線の道を置いておく
+    L("roads").innerHTML =
+      SEGS.map(d => `<path class="edge" d="${d}"/>`).join("") +
+      `<g class="bridges"></g>` +
+      SEGS.map(d => `<path class="base" d="${d}"/>`).join("") +
+      SEGS.map(d => `<path class="dash" d="${d}"/>`).join("");
+    const dashes = svg.querySelectorAll(".roads .dash");
+
+    // マスは各時代の道に12個ずつ等間隔
+    dashes.forEach((path, e) => {
+      const len = path.getTotalLength();
+      for (let j = 0; j < PER_ERA; j++) {
+        const p = path.getPointAtLength(len * (j + 0.5) / PER_ERA);
+        PTS[e * PER_ERA + j] = [p.x, p.y];
+      }
+    });
+
+    // 橋: 道が川の上を通るところを探して、欄干と床板を敷く
+    const rivers = [...svg.querySelectorAll(".river")];
+    let bridges = "";
+    dashes.forEach(path => {
+      const len = path.getTotalLength();
+      let run = [];
+      const flush = () => {
+        if (run.length > 1) {
+          const d = "M" + run.map(p => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" L");
+          bridges += `<path class="rail" d="${d}"/><path class="deck" d="${d}"/><path class="plank" d="${d}"/>`;
+        }
+        run = [];
+      };
+      for (let s = 0; s <= len; s += 3) {
+        const p = path.getPointAtLength(s);
+        const pt = new DOMPoint(p.x, p.y);
+        const wet = rivers.some(r => r.isPointInStroke(pt));
+        if (wet) run.push(p); else flush();
+      }
+      flush();
+    });
+    svg.querySelector(".bridges").innerHTML = bridges;
+
+    // 道の上の「混んでいる点」。名前や飾りはここを避ける
+    const busy = [];
+    dashes.forEach(path => {
+      const len = path.getTotalLength();
+      for (let s = 0; s <= len; s += 14) { const p = path.getPointAtLength(s); busy.push([p.x, p.y]); }
+    });
+    const taken = [];   // ラベル・目印・看板が使った領域
+    const gapAt = (box) => Math.min(...busy.map(p => distToBox(p, box)));
+    const free = (box, minGap, pad = 8) => gapAt(box) > minGap && taken.every(t => !boxesOverlap(t, box, pad));
+
+    // 関所: 時代の境目に門を立てる
+    let gates = "";
+    for (let e = 1; e < ERAS.length; e++) {
+      const path = dashes[e];
+      const p = path.getPointAtLength(1), q = path.getPointAtLength(12);
+      const ang = Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI;
+      gates += `<g class="gate" transform="translate(${p.x} ${p.y}) rotate(${ang})">
+        <rect class="post" x="-4" y="-26" width="8" height="10"/><rect class="post" x="-4" y="16" width="8" height="10"/>
+        <line class="beam" x1="0" y1="-26" x2="0" y2="26"/></g>`;
+      const lw = 66;
+      const spots = [[0, -62], [0, 38], [-62, -40], [62, -40], [-62, 18], [62, 18], [0, -90], [0, 66]];
+      for (const [dx, dy] of spots) {
+        const box = [p.x + dx - lw / 2, p.y + dy, lw, 22];
+        if (!free(box, 28, 6)) continue;
+        taken.push(box);
+        gates += `<g class="gate"><rect class="plate" x="${box[0]}" y="${box[1]}" width="${lw}" height="22"/>
+          <text x="${p.x + dx}" y="${box[1] + 16}" text-anchor="middle">時代${e + 1}へ</text></g>`;
+        break;
+      }
+    }
+
+    // 年数の立て札: 15マス(5年)ごと
+    for (let i = 14; i < TOTAL - 1; i += 15) {
+      const [x, y] = PTS[i];
+      const label = `${(i + 1) / 3}年目`;
+      const cands = [[40, -54], [-40, -54], [40, 26], [-40, 26], [0, -76], [0, 44], [64, -14], [-64, -14]];
+      for (const [dx, dy] of cands) {
+        const box = [x + dx - 28, y + dy, 56, 20];
+        if (free(box, 28, 4)) {
+          taken.push(box);
+          gates += `<g class="sign"><line class="pole" x1="${x + dx}" y1="${y + dy + 20}" x2="${x + dx}" y2="${y + dy + 34}"/>
+            <rect class="plate" x="${box[0]}" y="${box[1]}" width="56" height="20"/>
+            <text x="${x + dx}" y="${box[1] + 15}" text-anchor="middle">${label}</text></g>`;
+          break;
+        }
+      }
+    }
+
+    // 題名・縮尺・方位(地図の上の真ん中)と、凡例(下の真ん中)
+    let frame = `<g class="cartouche">
+      <rect class="box" x="535" y="40" width="335" height="135"/><rect class="box2" x="541" y="46" width="323" height="123"/>
+      <text class="t" x="560" y="88" style="font-size:29px">エンジニア人生 全図</text>
+      <text class="s" x="560" y="113">1マス = 4か月 / 全${TOTAL}マス・30年</text>
+      <g transform="translate(560 135)">
+        ${[0, 1, 2, 3, 4].map(k => `<rect x="${k * 36}" y="0" width="36" height="8" style="fill:${k % 2 ? "var(--panel)" : "var(--ink)"};stroke:var(--ink)"/>`).join("")}
+        <text class="s" x="0" y="26">0</text><text class="s" x="180" y="26" text-anchor="middle">5年</text>
+      </g>
+      <g transform="translate(838 150)">
+        <polygon points="0,-34 9,0 0,-6 -9,0" style="fill:var(--t-red)"/><polygon points="0,26 9,0 0,6 -9,0" style="fill:var(--muted)"/>
+        <text class="n" x="0" y="-38" text-anchor="middle">N</text>
+      </g></g>`;
+    taken.push([535, 40, 335, 135]);
+    const legendItems = [["job", "案件"], ["fire", "炎上"], ["study", "勉強"], ["change", "転職"], ["event", "イベント"], ["legacy", "レガシー案件"]];
+    frame += `<g class="legend"><rect class="box" x="565" y="715" width="300" height="160" style="fill:var(--panel);stroke:var(--frame);stroke-width:2"/>
+      <text class="h" x="582" y="744">凡例</text>
+      ${legendItems.map(([t, nm], k) => `<rect x="${582 + (k % 2) * 140}" y="${758 + Math.floor(k / 2) * 24}" width="14" height="14" style="fill:var(--${t})"/>
+        <text x="${602 + (k % 2) * 140}" y="${770 + Math.floor(k / 2) * 24}">${nm}</text>`).join("")}
+      <rect x="582" y="832" width="14" height="14" style="fill:var(--special)"/><text x="602" y="844">ふりだし・分かれ道・上がり</text>
+      <rect x="582" y="853" width="14" height="6" style="fill:var(--t-red)"/><text x="602" y="862">関所 = 時代の境目</text></g>`;
+    taken.push([565, 715, 300, 160]);
+    L("frame").innerHTML = frame;
+
+    // エリア: 区画・地面の模様・名前
+    let regions = "", labels = "";
+    ERAS.forEach((era, e) => {
+      const { rect: [x, y, w, h], pat } = REGIONS[e];
+      const cur = e === CURRENT_ERA ? "cur" : "";
+      regions += `<g class="region ${cur}">
+        <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="24" style="fill:color-mix(in srgb, var(--${era.line}) 14%, transparent)"/>
+        <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="24" fill="url(#p-${pat})"/>
+        <rect class="edge" x="${x}" y="${y}" width="${w}" height="${h}" rx="24" style="stroke:var(--${era.line})"/></g>`;
+      const sub = `時代${e + 1} ${era.name}`;
+      const lw = era.place.length * 25 + sub.length * 13 + 20, lh = 30;
+      let best = null, bestGap = -1;
+      for (let by = y + 8; by <= y + h - lh - 8; by += 6)
+        for (let bx = x + 10; bx <= x + w - lw - 10; bx += 6) {
+          const box = [bx, by, lw, lh];
+          if (!taken.every(t => !boxesOverlap(t, box, 6))) continue;
+          const g = gapAt(box);
+          if (g > bestGap) { bestGap = g; best = box; }
+        }
+      taken.push(best);
+      labels += `<g class="label ${cur}"><text x="${best[0]}" y="${best[1] + 24}">${cur ? "▶ " : ""}${era.place} <tspan>${sub}</tspan></text></g>`;
+    });
+    L("regions").innerHTML = regions;
+
+    // 目印のドット絵: 区画の中で道から一番離れた場所に置く
+    let decor = "";
+    REGIONS.forEach(({ rect: [x, y, w, h], marks, trees }) => {
+      marks.forEach(([name, nm]) => {
+        const s = name === "mountain" ? 6 : 5;
+        let best = null, bestGap = -1;
+        for (let cy = y + 30; cy <= y + h - 30; cy += 8)
+          for (let cx = x + 40; cx <= x + w - 40; cx += 8) {
+            const box = spriteBox(name, cx, cy, s);
+            const tw = Math.max(box[2] + 12, nm.length * 12 + 10);
+            const full = [cx - tw / 2, box[1] - 4, tw, box[3] + 22];
+            if (full[0] < x + 6 || full[1] < y + 6 || full[0] + full[2] > x + w - 6 || full[1] + full[3] > y + h - 6) continue;
+            if (!taken.every(t => !boxesOverlap(t, full, 10))) continue;
+            const g = gapAt(full);
+            if (g > bestGap) { bestGap = g; best = [cx, cy, full]; }
+          }
+        if (!best || bestGap < 18) return;
+        const [cx, cy, full] = best;
+        taken.push(full);
+        decor += `<g class="landmark">${sprite(name, cx, cy, s)}<text x="${cx}" y="${cy + 15}" text-anchor="middle">${nm}</text></g>`;
+      });
+      for (let k = 0, n = 0; k < 200 && n < trees; k++) {
+        const cx = x + 20 + rand() * (w - 40), cy = y + 40 + rand() * (h - 50);
+        const box = spriteBox("tree", cx, cy, 4);
+        if (box[1] < y + 8 || box[0] + box[2] > x + w - 8) continue;
+        if (free(box, 22, 6)) { taken.push(box); decor += sprite("tree", cx, cy, 4); n++; }
+      }
+    });
+    L("decor").innerHTML = decor;
+    L("labels").innerHTML = labels;
+    L("gates").innerHTML = gates;
+
+    // マス
+    $("#tiles").innerHTML = PTS.map(([x, y], i) => {
+      const type = typeAt(i), t = TYPES[type];
+      return `<div class="tile t-${type} ${t.special ? "special" : ""}" data-i="${i}" tabindex="0"
+        style="left:${x / W * 100}%;top:${y / H * 100}%;--c:var(--${t.c})"><span class="no">${i + 1}</span><span>${t.g}</span></div>`;
+    }).join("");
+    $("#pieces").innerHTML = PLAYERS.map((p, k) =>
+      `<div class="piece ${p.turn ? "turn" : ""} ${p.resting ? "rest" : ""}" data-p="${k}" style="--pc:var(${p.c})">
+        <span class="tip-end"></span><span class="head">${p.nm[0]}</span><span class="name">${p.nm}</span></div>`).join("");
+  }
+
+  function update() {
+    document.querySelectorAll(".tile").forEach(t => t.classList.toggle("passed", +t.dataset.i < me().pos));
+    document.querySelectorAll(".piece").forEach(el => {
+      const p = PLAYERS[+el.dataset.p];
+      const same = PLAYERS.filter(q => q.pos === p.pos);
+      const k = same.indexOf(p), n = same.length;
+      const [x, y] = PTS[p.pos];
+      el.style.left = `calc(${x / W * 100}% + ${(k - (n - 1) / 2) * 46}px)`;
+      el.style.top = `${y / H * 100}%`;
+      el.style.zIndex = k + 1;
+    });
+    renderPlayers();
+    renderHeader();
+  }
+
+  // ---- マスの説明 ----
+  function showTip(tile) {
+    const i = +tile.dataset.i, t = TYPES[typeAt(i)], e = eraOf(i);
+    const tip = $("#tip"), map = $("#map").getBoundingClientRect(), r = tile.getBoundingClientRect();
+    const here = PLAYERS.filter(p => p.pos === i).map(p => p.nm).join("、");
+    tip.innerHTML = `<b>${t.nm}</b><div class="m">${i + 1}マス目 / ${ERAS[e].place}(時代${e + 1})/ ${yearOf(i)}年目</div><div>${t.fx}</div>${here ? `<div class="m">ここにいる人: ${here}</div>` : ""}`;
+    tip.classList.add("show");
+    const left = Math.min(r.right - map.left + 10, map.width - tip.offsetWidth - 8);
+    tip.style.left = left + "px";
+    tip.style.top = Math.max(8, r.top - map.top - tip.offsetHeight - 10) + "px";
+  }
+  const hideTip = () => $("#tip").classList.remove("show");
+
+  // ---- 起動 ----
+  function start() {
+    build();
+    update();
+    document.querySelectorAll(".tile").forEach(t => {
+      t.addEventListener("mouseenter", () => showTip(t));
+      t.addEventListener("focus", () => showTip(t));
+      t.addEventListener("mouseleave", hideTip);
+      t.addEventListener("blur", hideTip);
+    });
+  }
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(start);
+  $("#players").addEventListener("mouseover", e => {
+    const pl = e.target.closest(".pl");
+    document.querySelectorAll(".piece").forEach(el => el.classList.toggle("focus", !!pl && el.dataset.p === pl.dataset.p));
+  });
+  $("#players").addEventListener("mouseleave", () => document.querySelectorAll(".piece.focus").forEach(el => el.classList.remove("focus")));
+
+  // ---- ステータスの描画 ----
+  function blocks(val, max, cells, color) {
+    const n = Math.max(0, Math.min(cells, Math.round(val / max * cells)));
+    return `<span style="color:${color}">${"█".repeat(n)}</span><span class="muted" style="opacity:.5">${"░".repeat(cells - n)}</span>`;
+  }
+  function renderTrend() {
+    const lvColor = (v) => v >= 4 ? "var(--t-green)" : v >= 3 ? "var(--title)" : "var(--t-red)";
+    $("#trend").innerHTML = TECHS.map(t => `
+      <div class="mrow">
+        <span>${t.nm}</span>
+        <span class="bar">${blocks(t.v, 5, 15, lvColor(t.v))}</span>
+        <span class="v">${t.v}/5</span>
+        <span class="d ${t.d > 0 ? "green" : t.d < 0 ? "red" : "muted"}">${t.d > 0 ? "▲" + t.d : t.d < 0 ? "▼" + -t.d : "−"}</span>
+      </div>`).join("") + `
+      <div class="mrow"><span class="magenta">AIの進化</span><span class="bar">${blocks(1, 3, 15, "var(--t-magenta)")}</span><span class="v">Lv1</span><span></span></div>`;
+  }
+  function renderHeader() {
+    const e = eraOf(me().pos);
+    $("#eraName").textContent = `時代 ${e + 1}/5 ${ERAS[e].place}(${ERAS[e].name})`;
+    $("#eraBar").textContent = ERAS.map((_, i) => i < e ? "■" : i === e ? "▣" : "□").join("");
+    $("#turnNo").textContent = `ターン ${turn}`;
+    $("#cwd").textContent = ["training", "client-town", "ai-lab", "tech-mountains", "port"][e];
+  }
+  function renderPlayers() {
+    const row = (k, val, max, text, color) =>
+      `<div class="mrow"><span class="muted">${k}</span><span class="bar">${blocks(val, max, 12, color)}</span><span class="v">${text}</span></div>`;
+    $("#players").innerHTML = PLAYERS.map((p, k) => {
+      const e = eraOf(p.pos);
+      return `<div class="pl ${p.turn ? "turn" : ""} ${p.resting ? "resting" : ""}" data-p="${k}">
+        <div class="pl-head">
+          <span class="chip" style="--pc:var(${p.c})">${p.nm[0]}</span>
+          <span><span class="name">${p.nm}</span> <span class="route">${p.route}</span></span>
+          <span class="state ${p.resting ? "red" : "muted"}">${p.turn ? "手番" : p.resting ? "休職中" : ""}</span>
+        </div>
+        <div class="where">${p.pos + 1}/${TOTAL}マス目 ${ERAS[e].place} ${yearOf(p.pos)}年目</div>
+        ${row("お金", p.money, 800, p.money + "万", "var(--title)")}
+        ${row("スキル", p.skill, 30, p.skill, "var(--t-cyan)")}
+        ${row("メンタル", p.mental, 10, p.mental + "/10", p.mental <= 3 ? "var(--t-red)" : "var(--t-green)")}
+        ${row("評判", p.rep, 20, p.rep, "var(--t-magenta)")}
+        <div class="stack">技術: <span>${p.techs.join(", ")}</span></div>
+      </div>`;
+    }).join("");
+  }
+
+  // ---- マスの効果(モック用のざっくりした数値) ----
+  const trendOf = (nm) => TECHS.find(t => t.nm === nm).v;
+  function applySquare(p, type, usedAi) {
+    const best = Math.max(...p.techs.map(trendOf));
+    switch (type) {
+      case "job": {
+        const pay = 20 + best * 10;
+        p.money += pay; if (!usedAi) p.skill += 1;
+        return ["info", `案件をこなした。お金 +${pay}万${usedAi ? "(AIで楽をしたのでスキルは据え置き)" : "、スキル +1"}`];
+      }
+      case "fire":
+        p.mental = Math.max(0, p.mental - 2); p.rep += 1;
+        return ["error", "炎上案件に巻き込まれた。メンタル −2、乗り切って評判 +1"];
+      case "study":
+        p.money -= 30; if (!usedAi) p.skill += 2;
+        return ["info", `勉強会に参加。お金 −30万${usedAi ? "" : "、スキル +2"}`];
+      case "change":
+        p.rep += 1;
+        return ["info", "転職の誘いが来た。評判 +1(ルート変更は未実装)"];
+      case "legacy":
+        if (p.techs.includes("古いシステム")) { p.money += 150; return ["money", "誰も触れない古いシステムの案件。お金 +150万"]; }
+        return ["warn", "レガシー案件だが、古いシステムが分からず何もできなかった"];
+      case "event":
+        return ["warn", "イベントマス。流行カードをめくった"];
+      case "branch":
+        return ["ai", "分かれ道。今回はスペシャリストの道を進む"];
+      case "goal":
+        return ["info", "定年。お疲れさまでした"];
+      default:
+        return ["info", TYPES[type].nm + "に止まった"];
+    }
+  }
+  function addLog(level, text) {
+    $("#log").insertAdjacentHTML("afterbegin",
+      `<div><span class="muted">T${turn}</span><span class="lv ${level}">${level === "money" ? "$$$" : level.toUpperCase()}</span><span><b style="color:var(--p1)">あなた</b>: ${text}</span></div>`);
+  }
+
+  // ---- 流行カード ----
+  function openCard() {
+    const card = TREND_CARDS[Math.floor(Math.random() * TREND_CARDS.length)];
+    let diff = `<div class="hunk">@@ trend.yml @@</div>`;
+    card.fx.forEach(([nm, d]) => {
+      const t = TECHS.find(x => x.nm === nm);
+      const before = t.v;
+      t.v = Math.max(1, Math.min(5, t.v + d)); t.d = t.v - before;
+      const pad = (str) => str + " ".repeat(Math.max(1, 8 - str.length * 2));
+      diff += `<div class="del">- ${pad(nm + ":")}${before}</div><div class="add">+ ${pad(nm + ":")}${t.v}</div>`;
+    });
+    $("#cardName").textContent = card.nm;
+    $("#cardText").textContent = card.text;
+    $("#cardDiff").innerHTML = diff;
+    $("#overlay").classList.add("open");
+    $("#closeCard").focus();
+    renderTrend();
+  }
+  const closeCard = () => $("#overlay").classList.remove("open");
+  $("#closeCard").addEventListener("click", closeCard);
+
+  // ---- サイコロ ----
+  const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+  function setDie(n) {
+    const die = $("#dice");
+    die.classList.toggle("one", n === 1);
+    die.setAttribute("aria-label", `サイコロ: ${n}`);
+    die.innerHTML = Array.from({ length: 9 }, (_, i) => `<i class="${PIPS[n].includes(i) ? "on" : ""}"></i>`).join("");
+  }
+  setDie(5);
+  renderTrend();
+
+  $("#aiCard").addEventListener("click", e => {
+    const on = e.currentTarget.classList.toggle("on");
+    $("#cmd").textContent = on ? "./roll --ai-pair" : "./roll";
+  });
+
+  let rolling = false;
+  async function roll() {
+    if (rolling || me().pos >= TOTAL - 1) return;
+    rolling = true;
+    $("#roll").disabled = true;
+    const die = $("#dice");
+    die.classList.add("rolling");
+    const timer = setInterval(() => setDie(1 + Math.floor(Math.random() * 6)), 80);
+    await sleep(900);
+    clearInterval(timer);
+    die.classList.remove("rolling");
+    const n = 1 + Math.floor(Math.random() * 6);
+    const usedAi = $("#aiCard").classList.contains("on");
+    setDie(n);
+    await sleep(250);
+
+    const piece = document.querySelector('.piece[data-p="0"]');
+    piece.classList.remove("turn");
+    for (let s = 0; s < n + (usedAi ? 2 : 0) && me().pos < TOTAL - 1; s++) {
+      me().pos++;
+      piece.classList.remove("hop"); void piece.offsetWidth; piece.classList.add("hop");
+      update();
+      await sleep(240);
+    }
+    piece.classList.add("turn");
+
+    const type = typeAt(me().pos);
+    const [level, text] = applySquare(me(), type, usedAi);
+    turn++;
+    addLog(level, `${n}${usedAi ? "+2" : ""} 進んで ${me().pos + 1}マス目(${TYPES[type].nm})。${text}`);
+    update();
+    document.querySelector('.pl[data-p="0"]').classList.add("flash");
+    if (usedAi) { $("#aiCard").classList.remove("on"); $("#cmd").textContent = "./roll"; }
+    $("#roll").disabled = false;
+    rolling = false;
+    if (type === "event") { await sleep(400); openCard(); }
+  }
+  $("#roll").addEventListener("click", roll);
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") return closeCard();
+    if (e.key === "Enter" && !$("#overlay").classList.contains("open") && e.target.tagName !== "BUTTON") { e.preventDefault(); roll(); }
+    if (e.key.toLowerCase() !== "t") return;
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+  });
+</script>
+</body>
+</html>

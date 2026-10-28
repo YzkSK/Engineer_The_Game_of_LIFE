@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>エンジニア人生ゲーム UIモック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1+Code:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ライト: 連続用紙のプリンタ出力 */
+  :root {
+    --desk: #e4e8da; --panel: #fbfcf5; --panel-2: #eef1e4;
+    --frame: #2d5a43; --ink: #1b2620; --muted: #66756b; --title: #7a4e00;
+    --sel: #2d5a43; --sel-ink: #fbfcf5; --drop: #c3cab4;
+    --bar: #2d5a43; --bar-ink: #fbfcf5;
+    --stripe: rgba(45, 90, 67, .07);
+
+    /* マスの塗り(端末の16色) */
+    --job: #8fdcaa; --fire: #ffaa9e; --study: #a9c9ff; --change: #dcb6ff; --event: #ffdb70;
+    --special: #1b2620; --tile-ink: #1b2620; --special-ink: #fbfcf5;
+
+    /* 文字色 */
+    --t-red: #b3261e; --t-green: #1d7a46; --t-magenta: #7b3fb0; --t-cyan: #0b6f86;
+
+    --p1: #c2347a; --p2: #0b7f95; --p3: #4f8a0b; --p4: #c46a0a;
+
+    --dot: "DotGothic16", "M PLUS 1 Code", monospace;
+    font-family: "M PLUS 1 Code", ui-monospace, monospace;
+  }
+  /* ダーク: 青い TUI */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --desk: #0b1a3d; --panel: #17357f; --panel-2: #11295f;
+      --frame: #9cd6ff; --ink: #eef3ff; --muted: #9fb0d6; --title: #ffe066;
+      --sel: #9cd6ff; --sel-ink: #0b1a3d; --drop: #050c1e;
+      --bar: #c8d2ea; --bar-ink: #0b1a3d;
+      --stripe: rgba(255, 255, 255, .035);
+      --job: #4fd27a; --fire: #ff6b5e; --study: #8cc4ff; --change: #d99bff; --event: #ffd84d;
+      --special: #f2f4fa; --tile-ink: #0b1a3d; --special-ink: #0b1a3d;
+      --t-red: #ff9a90; --t-green: #7ee6a0; --t-magenta: #e6b8ff; --t-cyan: #9cd6ff;
+      --p1: #ff8fc7; --p2: #7ef0ff; --p3: #c4f27a; --p4: #ffb766;
+    }
+  }
+  :root[data-theme="dark"] {
+    --desk: #0b1a3d; --panel: #17357f; --panel-2: #11295f;
+    --frame: #9cd6ff; --ink: #eef3ff; --muted: #9fb0d6; --title: #ffe066;
+    --sel: #9cd6ff; --sel-ink: #0b1a3d; --drop: #050c1e;
+    --bar: #c8d2ea; --bar-ink: #0b1a3d;
+    --stripe: rgba(255, 255, 255, .035);
+    --job: #4fd27a; --fire: #ff6b5e; --study: #8cc4ff; --change: #d99bff; --event: #ffd84d;
+    --special: #f2f4fa; --tile-ink: #0b1a3d; --special-ink: #0b1a3d;
+    --t-red: #ff9a90; --t-green: #7ee6a0; --t-magenta: #e6b8ff; --t-cyan: #9cd6ff;
+    --p1: #ff8fc7; --p2: #7ef0ff; --p3: #c4f27a; --p4: #ffb766;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; padding-bottom: 44px;
+    color: var(--ink); font-size: 14px; line-height: 1.65;
+    background: radial-gradient(circle, var(--panel-2) 1px, transparent 1.5px) 0 0 / 8px 8px, var(--desk);
+  }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--title); outline-offset: 2px; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .muted { color: var(--muted); }
+  .red { color: var(--t-red); } .green { color: var(--t-green); } .magenta { color: var(--t-magenta); }
+  .cyan { color: var(--t-cyan); } .yellow { color: var(--title); }
+
+  /* ---------- 窓(二重線の枠 + くっきりした影) ---------- */
+  .win {
+    position: relative; min-width: 0; margin-top: 10px;
+    background: var(--panel); border: 4px double var(--frame);
+    box-shadow: 8px 8px 0 var(--drop);
+  }
+  .win-t {
+    position: absolute; top: -.85em; left: 50%; transform: translateX(-50%); margin: 0;
+    padding: 0 1ch; background: var(--panel); color: var(--title);
+    font: 400 16px/1.4 var(--dot); white-space: nowrap;
+  }
+  .win-m {
+    position: absolute; top: -.8em; right: 2ch; padding: 0 1ch; background: var(--panel);
+    font-size: 11px; line-height: 1.4; color: var(--muted); white-space: nowrap;
+  }
+  .win-b { padding: 20px 18px 16px; }
+  .win.focus { border-color: var(--title); }
+  .ruled { background-image: repeating-linear-gradient(var(--stripe) 0 23px, transparent 23px 46px); }
+
+  .btn {
+    border: 0; padding: 7px 16px; cursor: pointer; font-weight: 700; white-space: nowrap;
+    background: var(--bar); color: var(--bar-ink); box-shadow: 4px 4px 0 var(--drop);
+  }
+  .btn:active { transform: translate(4px, 4px); box-shadow: none; }
+  .btn.primary { background: var(--title); color: var(--sel-ink); }
+  .btn:disabled { opacity: .55; cursor: wait; }
+  .key { display: inline-block; padding: 0 5px; margin-left: 6px; font-size: 11px; font-weight: 500; border: 1px solid currentColor; opacity: .75; }
+
+  /* ---------- ファンクションキーのバー ---------- */
+  .fkeys {
+    position: fixed; z-index: 60; left: 0; right: 0; bottom: 0;
+    display: flex; gap: 4px; align-items: stretch; padding: 6px 10px; overflow-x: auto;
+    background: var(--drop); font-size: 12px; white-space: nowrap;
+  }
+  .fkeys button { display: flex; border: 0; padding: 0; background: none; cursor: pointer; }
+  .fkeys b { padding: 2px 6px; color: var(--ink); font-weight: 700; }
+  .fkeys span { padding: 2px 10px 2px 6px; background: var(--bar); color: var(--bar-ink); }
+  .fkeys button.on span { background: var(--title); color: var(--sel-ink); }
+  :root:not([data-theme="dark"]) .fkeys b { color: var(--panel); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fkeys b { color: var(--ink); } }
+
+  /* ---------- タイトル画面 ---------- */
+  .title-wrap {
+    max-width: 1120px; margin: 0 auto; padding: 56px 20px 40px;
+    display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 48px; align-items: start;
+  }
+  .hero-title {
+    margin: 0; font: 400 clamp(44px, 7.4vw, 92px)/1.08 var(--dot); letter-spacing: .02em;
+    color: var(--ink); text-shadow: 5px 5px 0 var(--drop);
+  }
+  .hero-lead { margin: 20px 0 0; max-width: 32em; font-size: 15px; }
+  .ruler { margin-top: 36px; }
+  .ruler-cells { display: grid; grid-template-columns: repeat(5, 1fr); border: 2px solid var(--frame); background: var(--panel); }
+  .ruler-cells div { padding: 10px 10px 12px; border-left: 1px solid var(--frame); min-width: 0; }
+  .ruler-cells div:first-child { border-left: 0; }
+  .ruler-cells b { display: block; font: 400 15px/1.3 var(--dot); }
+  .ruler-cells small { color: var(--muted); font-size: 11px; }
+  .ruler-cells .ai { background: var(--change); color: var(--tile-ink); }
+  .ruler-cells .ai small { color: inherit; opacity: .75; }
+  .ruler-scale { display: grid; grid-template-columns: repeat(5, 1fr); font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .ruler-scale span:last-child { display: flex; justify-content: space-between; }
+
+  .field-label { margin: 16px 0 6px; font-weight: 700; }
+  .field-label:first-child { margin-top: 0; }
+  .radio { display: flex; gap: 18px; flex-wrap: wrap; }
+  .radio button { border: 0; background: none; padding: 0; cursor: pointer; color: var(--muted); }
+  .radio button::before { content: "( ) "; }
+  .radio button.on { color: var(--ink); }
+  .radio button.on::before { content: "(•) "; color: var(--title); }
+  .slot { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center; margin-top: 6px; }
+  .chip { width: 26px; height: 26px; display: grid; place-items: center; font: 400 15px/1 var(--dot); color: var(--sel-ink); background: var(--pc); }
+  .slot input { width: 100%; min-width: 0; padding: 4px 8px; border: 0; background: var(--panel-2); outline: none; }
+  .slot input:focus { box-shadow: inset 0 -2px 0 var(--title); }
+  .toggle { display: flex; }
+  .toggle button { border: 1px solid var(--frame); background: none; padding: 3px 10px; cursor: pointer; font-size: 12px; color: var(--muted); }
+  .toggle button + button { border-left: 0; }
+  .toggle button.on { background: var(--sel); color: var(--sel-ink); }
+  .url { display: flex; gap: 8px; align-items: center; padding: 6px 6px 6px 10px; background: var(--panel-2); }
+  .url code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: inherit; font-size: 12px; color: var(--t-cyan); }
+  .url .btn { padding: 3px 12px; font-size: 12px; box-shadow: none; }
+  .start-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 20px; }
+
+  /* ---------- ゲーム画面 ---------- */
+  .game { max-width: 1320px; margin: 0 auto; padding: 0 16px 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .menubar {
+    display: flex; flex-wrap: wrap; gap: 0 22px; align-items: center; padding: 4px 14px; margin: 0 -16px 4px;
+    background: var(--bar); color: var(--bar-ink); font-size: 13px;
+  }
+  .menubar .era { font: 400 15px/1.6 var(--dot); }
+  .menubar .sp { flex: 1; }
+
+  .meters { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 40px; }
+  .mrow { display: grid; grid-template-columns: 7.5em max-content 3em 2.5em; justify-content: start; gap: 16px; align-items: center; white-space: nowrap; }
+  .mrow .bar { overflow: hidden; letter-spacing: -.04em; }
+  .mrow .v, .mrow .d { text-align: right; }
+  .mrow .d { font-weight: 700; }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; align-items: start; }
+
+  /* 盤 */
+  .board-grid { position: relative; isolation: isolate; display: grid; grid-template-columns: 92px repeat(8, minmax(0, 1fr)); gap: 22px 24px; }
+  .era-label { grid-row: calc(var(--row) + 1); grid-column: 1; z-index: 2; align-self: center; }
+  .era-label b { display: block; font: 400 16px/1.3 var(--dot); }
+  .era-label small { color: var(--muted); font-size: 11px; }
+  .era-label.current b { color: var(--title); }
+  .era-label.current b::before { content: "▶ "; }
+  .zone { grid-row: calc(var(--row) + 1); grid-column: 2 / -1; margin: -10px -12px; z-index: 0; border: 2px dashed var(--title); }
+
+  .road { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+  .road path { fill: none; stroke-linejoin: miter; }
+  .road .edge { stroke: var(--frame); stroke-width: 12; }
+  .road .base { stroke: var(--panel); stroke-width: 5; }
+
+  .sq {
+    position: relative; z-index: 2; aspect-ratio: 1 / 1; min-width: 0; padding: 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    grid-row: calc(var(--row) + 1); grid-column: calc(var(--col) + 2);
+    background: var(--c); color: var(--tile-ink); box-shadow: 4px 4px 0 var(--drop);
+  }
+  .sq .g { font: 400 20px/1.15 var(--dot); white-space: nowrap; }
+  .sq .nm { font-size: 10px; font-weight: 700; white-space: nowrap; }
+  .sq .no { position: absolute; top: 1px; left: 4px; font-size: 9px; opacity: .6; }
+  .sq.special { color: var(--special-ink); }
+  .sq.t-ai { background: repeating-linear-gradient(45deg, var(--change) 0 6px, color-mix(in srgb, var(--change) 70%, var(--panel)) 6px 12px); color: var(--tile-ink); }
+  .sq.t-goal { background: repeating-conic-gradient(var(--special) 0 25%, var(--special-ink) 0 50%) 0 0 / 12px 12px; }
+  .sq.t-goal .g, .sq.t-goal .nm { background: var(--special); color: var(--special-ink); padding: 0 4px; }
+  .sq.passed::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle, var(--panel) 1px, transparent 1.4px) 0 0 / 5px 5px; opacity: .6; }
+  .sq.land { animation: land .45s steps(3); }
+  @keyframes land { 50% { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--drop); } }
+
+  .pieces { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+  .piece {
+    position: absolute; width: 22px; height: 22px; margin: -32px 0 0 -11px; display: grid; place-items: center;
+    background: var(--pc); color: var(--sel-ink); font: 400 14px/1 var(--dot);
+    box-shadow: 2px 2px 0 var(--drop), 0 0 0 2px var(--panel);
+    transition: left .2s steps(2), top .2s steps(2);
+  }
+  .piece::after { content: ""; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); border: 4px solid transparent; border-top: 4px solid var(--pc); border-bottom: 0; }
+  .piece.turn { animation: blink-piece 1s steps(1) infinite; }
+  .piece.hop { animation: hop .2s steps(2); }
+  .piece.rest { opacity: .55; }
+  @keyframes blink-piece { 50% { box-shadow: 2px 2px 0 var(--drop), 0 0 0 2px var(--title); } }
+  @keyframes hop { 50% { transform: translateY(-12px); } }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 22px; font-size: 12px; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend i { width: 12px; height: 12px; background: var(--c); }
+
+  /* プレイヤー */
+  .pl { padding: 8px 16px 10px; }
+  .pl + .pl { border-top: 1px solid color-mix(in srgb, var(--frame) 35%, transparent); }
+  .pl.turn { background: color-mix(in srgb, var(--sel) 16%, var(--panel)); }
+  .pl.resting { opacity: .6; }
+  .pl-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .pl-head .name { font: 400 16px/1.3 var(--dot); }
+  .pl-head .route { font-size: 11px; color: var(--muted); }
+  .pl-head .state { margin-left: auto; font-size: 11px; font-weight: 700; padding: 0 6px; }
+  .pl.turn .state { background: var(--title); color: var(--sel-ink); }
+  .pl .mrow { grid-template-columns: 5.5em minmax(0, 1fr) 4.5em; gap: 8px; font-size: 12px; }
+  .stack { font-size: 11px; color: var(--muted); }
+  .stack span { color: var(--ink); }
+
+  /* 手番 */
+  .act { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 22px; align-items: center; }
+  .die {
+    width: 64px; height: 64px; padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+    background: #f7f7f2; box-shadow: 5px 5px 0 var(--drop);
+  }
+  .die i { width: 10px; height: 10px; place-self: center; background: #10141c; visibility: hidden; }
+  .die i.on { visibility: visible; }
+  .die.one i.on { width: 14px; height: 14px; background: #d6342b; }
+  .die.rolling { animation: tumble .24s steps(2) infinite; }
+  @keyframes tumble { 50% { transform: translate(-3px, -6px) rotate(-8deg); } }
+  .prompt { overflow-wrap: anywhere; }
+  .prompt .ps { color: var(--t-green); font-weight: 700; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .hand { display: grid; gap: 6px; font-size: 12px; }
+  .check { border: 0; background: none; padding: 0; text-align: left; cursor: pointer; }
+  .check::before { content: "[ ] "; color: var(--muted); }
+  .check.on::before { content: "[x] "; color: var(--title); }
+  .check b { color: var(--t-magenta); }
+
+  .log { font-size: 12px; max-height: 180px; overflow: auto; padding: 16px 18px 12px; }
+  .log div { display: grid; grid-template-columns: 4ch 6.5ch minmax(0, 1fr); gap: 10px; line-height: 23px; }
+  .lv { font-weight: 700; text-align: center; color: var(--tile-ink); align-self: center; line-height: 17px; }
+  .lv.error { background: var(--fire); } .lv.warn { background: var(--event); }
+  .lv.ai { background: var(--change); } .lv.info { background: var(--study); }
+
+  /* ---------- カード ---------- */
+  .overlay { position: fixed; inset: 0; z-index: 40; display: none; place-items: center; padding: 20px; background: color-mix(in srgb, var(--desk) 70%, transparent); }
+  .overlay.open { display: grid; }
+  .overlay .win { width: min(460px, 100%); border-color: var(--title); animation: open .18s steps(3); }
+  @keyframes open { from { transform: scale(.9); opacity: 0; } }
+  .card-name { margin: 0 0 8px; font: 400 30px/1.25 var(--dot); }
+  .card-text { margin: 0 0 16px; }
+  .diff { font-size: 13px; background: var(--panel-2); padding: 6px 0; }
+  .diff div { padding: 0 12px; white-space: pre; overflow-x: auto; }
+  .diff .hunk { color: var(--muted); }
+  .diff .del { color: var(--t-red); }
+  .diff .add { color: var(--t-green); }
+  .card-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
+
+  /* ---------- 結果画面 ---------- */
+  .result { max-width: 980px; margin: 0 auto; padding: 40px 16px 32px; display: grid; gap: 22px; }
+  .result h1 { margin: 0 0 16px; font: 400 clamp(30px, 4.6vw, 44px)/1.2 var(--dot); }
+  .bd-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; margin-bottom: 8px; }
+  .bd-legend span { display: flex; align-items: center; gap: 6px; }
+  .bd-legend i { width: 12px; height: 12px; background: var(--c); }
+  .rank { display: grid; grid-template-columns: 2.5ch minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 14px 0; }
+  .rank + .rank { border-top: 1px solid color-mix(in srgb, var(--frame) 35%, transparent); }
+  .rank .pos { font: 400 26px/1 var(--dot); color: var(--muted); }
+  .rank .who { display: flex; align-items: center; gap: 10px; font: 400 18px/1.3 var(--dot); }
+  .rank .ttl { font-size: 12px; color: var(--muted); }
+  .rank .score { font: 400 34px/1 var(--dot); text-align: right; }
+  .rank .score small { font: 400 12px var(--dot); color: var(--muted); }
+  .rank.first .pos, .rank.first .score { color: var(--title); }
+  .rank .badge { font: 700 11px/1.6 "M PLUS 1 Code", monospace; padding: 0 6px; background: var(--title); color: var(--sel-ink); }
+  .breakdown { grid-column: 2 / -1; display: flex; height: 10px; }
+  .breakdown i { display: block; height: 100%; }
+  .gitlog div { display: grid; grid-template-columns: 2ch 8ch minmax(0, 1fr); gap: 10px; line-height: 23px; }
+  .gitlog .hash { color: var(--title); }
+  .result-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+
+  /* ---------- 狭い画面 ---------- */
+  @media (max-width: 1000px) {
+    .title-wrap { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+    .main { grid-template-columns: minmax(0, 1fr); }
+    .players-b { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); }
+    .pl + .pl { border-top: 0; }
+    .meters { grid-template-columns: minmax(0, 1fr); }
+    .act { grid-template-columns: auto minmax(0, 1fr); }
+    .hand { grid-column: 1 / -1; }
+    .act .btn.primary { grid-column: 1 / -1; justify-self: start; }
+  }
+  @media (max-width: 720px) {
+    .title-wrap { padding-top: 32px; }
+    .ruler-cells { grid-template-columns: 1fr; }
+    .ruler-cells div { border-left: 0; border-top: 1px solid var(--frame); }
+    .ruler-cells div:first-child { border-top: 0; }
+    .ruler-scale { display: none; }
+    .menubar .opt, .win-m { display: none; }
+    .mrow { grid-template-columns: 6.5em max-content 2.8em 2.2em; gap: 8px; font-size: 12px; }
+    .win-b { padding: 18px 12px 12px; }
+    .board-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px 6px; }
+    .era-label { grid-row: calc(var(--row) * 2 + 1); grid-column: 1 / -1; display: flex; gap: 8px; align-items: baseline; margin-top: 4px; }
+    .era-label b { display: inline; font-size: 14px; }
+    .zone { grid-row: calc(var(--row) * 2 + 2); grid-column: 1 / -1; margin: -5px -4px; }
+    .sq { padding: 1px; grid-row: calc(var(--row) * 2 + 2); grid-column: calc(var(--col) + 1); box-shadow: 2px 2px 0 var(--drop); }
+    .sq .nm, .sq .no { display: none; }
+    .sq .g { font-size: 12px; }
+    .road .edge { stroke-width: 7; } .road .base { stroke-width: 3; }
+    .piece { width: 15px; height: 15px; margin: -22px 0 0 -7px; font-size: 10px; }
+    .piece::after { border-width: 3px; bottom: -4px; }
+    .log div { grid-template-columns: 3ch 6ch minmax(0, 1fr); gap: 6px; }
+    .gitlog div { grid-template-columns: 2ch minmax(0, 1fr); }
+    .gitlog .hash { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= タイトル画面 ================= -->
+<section class="screen" id="title">
+  <div class="title-wrap">
+    <div>
+      <h1 class="hero-title">エンジニア<br>人生ゲーム</h1>
+      <p class="hero-lead">新卒から定年まで、30年分のエンジニア人生をすごろくで進みます。流行りの技術を追うか、古い技術に賭けるか。途中で AI が現れて、それまでの常識が変わります。最後に満足度が一番高い人の勝ちです。</p>
+      <div class="ruler">
+        <div class="ruler-cells">
+          <div><b>新卒期</b><small>研修と配属</small></div>
+          <div><b>若手期</b><small>案件と障害対応</small></div>
+          <div class="ai"><b>AI登場</b><small>4つの道に分かれる</small></div>
+          <div><b>ベテラン期</b><small>技術の価値が動く</small></div>
+          <div><b>終盤</b><small>満足度を仕上げる</small></div>
+        </div>
+        <div class="ruler-scale"><span>1年目</span><span>7年目</span><span>13年目</span><span>19年目</span><span><span>25年目</span><span>30年目</span></span></div>
+      </div>
+    </div>
+
+    <section class="win">
+      <h2 class="win-t">部屋の設定</h2>
+      <div class="win-b">
+        <div class="field-label">遊び方</div>
+        <div class="radio"><button class="on">部屋を作る</button><button>部屋に参加する</button></div>
+
+        <div class="field-label">プレイヤー <span class="muted" style="font-weight:400">足りない人数は CPU が入ります</span></div>
+        <div class="slot" style="--pc:var(--p1)"><span class="chip">1</span><input value="あなた" aria-label="プレイヤー1の名前"><div class="toggle"><button class="on">人間</button><button>CPU</button></div></div>
+        <div class="slot" style="--pc:var(--p2)"><span class="chip">2</span><input value="ミナミ" aria-label="プレイヤー2の名前"><div class="toggle"><button class="on">人間</button><button>CPU</button></div></div>
+        <div class="slot" style="--pc:var(--p3)"><span class="chip">3</span><input value="ケン" aria-label="プレイヤー3の名前"><div class="toggle"><button>人間</button><button class="on">CPU</button></div></div>
+        <div class="slot" style="--pc:var(--p4)"><span class="chip">4</span><input value="ユイ" aria-label="プレイヤー4の名前"><div class="toggle"><button>人間</button><button class="on">CPU</button></div></div>
+
+        <div class="field-label">招待用のURL</div>
+        <div class="url"><code>https://muds.gdl.jp/~s2422069/room/K7QX</code><button class="btn" id="copy">コピー</button></div>
+
+        <div class="start-row">
+          <button class="btn primary" data-go="game">ゲームを始める</button>
+          <span class="muted">人間 2人が参加中</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ================= ゲーム画面 ================= -->
+<section class="screen" id="game">
+  <div class="game">
+    <div class="menubar">
+      <span class="era">時代 3/5 AI登場・分かれ道</span>
+      <span id="eraBar"></span>
+      <span class="sp"></span>
+      <span>ターン 14/30</span>
+      <span class="opt">部屋 K7QX</span>
+      <span class="opt">4人</span>
+    </div>
+
+    <section class="win">
+      <h2 class="win-t">技術の人気度</h2>
+      <span class="win-m">時代3の流行カードで更新</span>
+      <div class="win-b meters" id="trend"></div>
+    </section>
+
+    <div class="main">
+      <section class="win">
+        <h2 class="win-t">すごろく盤</h2>
+        <div class="win-b">
+          <div class="board-grid" id="board"></div>
+          <div class="legend">
+            <span><i style="--c:var(--job)"></i>案件 お金とスキルが増える</span>
+            <span><i style="--c:var(--fire)"></i>炎上 メンタルが減る</span>
+            <span><i style="--c:var(--study)"></i>勉強 お金を払ってスキルを上げる</span>
+            <span><i style="--c:var(--change)"></i>転職 ルートを変えられる</span>
+            <span><i style="--c:var(--event)"></i>イベント カードを引く</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="win">
+        <h2 class="win-t">プレイヤー</h2>
+        <div class="players-b ruled" id="players" style="padding-top:10px"></div>
+      </section>
+    </div>
+
+    <section class="win focus">
+      <h2 class="win-t">あなたの番</h2>
+      <div class="win-b act">
+        <div class="die" id="dice" aria-label="サイコロ"></div>
+        <div>
+          <div class="prompt"><span class="ps">you@life</span>:~/era3$ <span id="cmd">./roll</span></div>
+          <div class="hint">AIペアプロを使うと出た目に +2。ただしスキルが伸びにくくなります。</div>
+        </div>
+        <div class="hand">
+          <button class="check" id="aiCard"><b>AIペアプロ</b> を使う</button>
+          <span class="muted">技術: <span style="color:var(--ink)">Web, インフラ</span></span>
+        </div>
+        <button class="btn primary" id="roll">サイコロを振る<span class="key">Enter</span></button>
+      </div>
+    </section>
+
+    <section class="win">
+      <h2 class="win-t">ログ</h2>
+      <div class="log ruled" id="log">
+        <div><span class="muted">T14</span><span class="lv error">ERROR</span><span><b style="color:var(--p2)">ミナミ</b> が炎上マスに止まった。メンタル −2、評判 +1</span></div>
+        <div><span class="muted">T14</span><span class="lv warn">WARN</span><span><b style="color:var(--p4)">ユイ</b> は休職中。あと1回休み</span></div>
+        <div><span class="muted">T13</span><span class="lv ai">AI</span><span>時代3に入り、AI が登場した。これから AI カードが手に入る</span></div>
+        <div><span class="muted">T13</span><span class="lv info">INFO</span><span>流行カード「クラウド大移行」。インフラ +2、古いシステム −1</span></div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ================= 結果画面 ================= -->
+<section class="screen" id="result">
+  <div class="result">
+    <section class="win">
+      <h2 class="win-t">30年の結果</h2>
+      <div class="win-b">
+        <h1>満足度ランキング</h1>
+        <div class="bd-legend">
+          <span><i style="--c:var(--event)"></i>お金</span>
+          <span><i style="--c:var(--study)"></i>スキル</span>
+          <span><i style="--c:var(--change)"></i>評判</span>
+          <span><i style="--c:var(--job)"></i>メンタル</span>
+          <span><i style="--c:var(--fire)"></i>ボーナス</span>
+        </div>
+        <div id="podium"></div>
+      </div>
+    </section>
+
+    <section class="win">
+      <h2 class="win-t">ミナミの30年</h2>
+      <span class="win-m">git log --oneline</span>
+      <div class="win-b gitlog ruled">
+        <div><span class="red">*</span><span class="hash">3f9a1c2</span><span><span class="cyan">(HEAD → 引退)</span> 時代5: 大障害を解決してボーナス +15</span></div>
+        <div><span class="red">*</span><span class="hash">9b0e4d1</span><span>時代4: データ分析が大流行。チームの評判が一気に伸びた</span></div>
+        <div><span class="magenta">*</span><span class="hash">1c7f8aa</span><span><span class="magenta">(tag: AI)</span> 時代3: マネージャーの道へ。手を動かすのは AI に任せた</span></div>
+        <div><span class="red">*</span><span class="hash">77d2e90</span><span>時代2: 大型案件を3連続で受注。メンタルは低空飛行</span></div>
+        <div><span class="red">*</span><span class="hash">04ab3f1</span><span><span class="green">(入社)</span> 時代1: スマホアプリの研修に配属。徹夜で初リリース</span></div>
+      </div>
+    </section>
+
+    <div class="result-actions">
+      <button class="btn primary" data-go="title">もう一度遊ぶ</button>
+      <button class="btn">結果をシェア</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 流行カード ================= -->
+<div class="overlay" id="overlay">
+  <section class="win" role="dialog" aria-labelledby="cardName">
+    <h2 class="win-t">流行カード</h2>
+    <div class="win-b">
+      <h3 class="card-name" id="cardName">クラウド大移行</h3>
+      <p class="card-text">オンプレからの引っ越しラッシュ。インフラが分かる人は引っぱりだこ。古いシステムはさらに肩身が狭くなった。</p>
+      <div class="diff">
+        <div class="hunk">@@ trend.yml @@</div>
+        <div class="del">- インフラ:       3</div>
+        <div class="add">+ インフラ:       5</div>
+        <div class="del">- 古いシステム:   2</div>
+        <div class="add">+ 古いシステム:   1</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn primary" data-close>閉じる<span class="key">Esc</span></button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<nav class="fkeys" aria-label="モックの画面切り替え">
+  <button data-screen="title"><b>1</b><span>タイトル</span></button>
+  <button data-screen="game"><b>2</b><span>ゲーム</span></button>
+  <button data-screen="card"><b>3</b><span>カード</span></button>
+  <button data-screen="result"><b>4</b><span>結果</span></button>
+  <button id="theme"><b>T</b><span>配色</span></button>
+</nav>
+
+<script>
+  // ---- モック用ダミーデータ ----
+  const TYPES = {
+    job:    { g: "¥+",  nm: "案件",     c: "job" },
+    fire:   { g: "!!",  nm: "炎上",     c: "fire" },
+    study:  { g: "{}",  nm: "勉強",     c: "study" },
+    change: { g: "⇄",   nm: "転職",     c: "change" },
+    event:  { g: "??",  nm: "イベント", c: "event" },
+    start:  { g: ">_",  nm: "入社",     c: "special", special: true },
+    ai:     { g: "AI",  nm: "AI登場",   c: "change",  special: true },
+    branch: { g: "├┬",  nm: "分かれ道", c: "special", special: true },
+    goal:   { g: "EOF", nm: "引退",     c: "special", special: true },
+  };
+  const ERAS = [
+    { name: "新卒期",     sub: "研修と配属", sq: ["start","study","job","event","study","fire","job","event"] },
+    { name: "若手期",     sub: "案件と障害", sq: ["job","fire","job","study","event","change","fire","job"] },
+    { name: "AI登場",     sub: "分かれ道",   sq: ["ai","event","branch","job","study","fire","event","job"] },
+    { name: "ベテラン期", sub: "価値が動く", sq: ["job","event","fire","change","job","study","event","fire"] },
+    { name: "終盤",       sub: "仕上げ",     sq: ["job","event","study","fire","job","event","job","goal"] },
+  ];
+  const CURRENT_ERA = 2;
+  const TECHS = [
+    { nm: "Web", v: 3, d: -1 },
+    { nm: "スマホアプリ", v: 3, d: 0 },
+    { nm: "インフラ", v: 5, d: +2 },
+    { nm: "データ分析", v: 4, d: +1 },
+    { nm: "古いシステム", v: 1, d: -1 },
+  ];
+  const PLAYERS = [
+    { nm: "あなた", c: "--p1", pos: 18, route: "スペシャリスト", money: 320, skill: 14, mental: 6, rep: 8, techs: ["Web", "インフラ"], turn: true },
+    { nm: "ミナミ", c: "--p2", pos: 20, route: "マネージャー", money: 410, skill: 9, mental: 3, rep: 11, techs: ["スマホアプリ", "データ分析"] },
+    { nm: "ケン", c: "--p3", pos: 15, route: "会社員 / CPU", money: 180, skill: 18, mental: 8, rep: 5, techs: ["古いシステム"] },
+    { nm: "ユイ", c: "--p4", pos: 16, route: "会社員 / CPU", money: 240, skill: 11, mental: 0, rep: 7, techs: ["Web"], resting: true },
+  ];
+
+  const $ = (s) => document.querySelector(s);
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const turnPlayer = () => PLAYERS.find(p => p.turn);
+
+  // 文字で描くメーター: ████░░░░
+  function blocks(val, max, cells, color) {
+    const n = Math.max(0, Math.min(cells, Math.round(val / max * cells)));
+    return `<span style="color:${color}">${"█".repeat(n)}</span><span class="muted" style="opacity:.5">${"░".repeat(cells - n)}</span>`;
+  }
+
+  function renderTrend() {
+    const lvColor = (v) => v >= 4 ? "var(--t-green)" : v >= 3 ? "var(--title)" : "var(--t-red)";
+    $("#trend").innerHTML = TECHS.map(t => `
+      <div class="mrow">
+        <span>${t.nm}</span>
+        <span class="bar">${blocks(t.v, 5, 15, lvColor(t.v))}</span>
+        <span class="v">${t.v}/5</span>
+        <span class="d ${t.d > 0 ? "green" : t.d < 0 ? "red" : "muted"}">${t.d > 0 ? "▲" + t.d : t.d < 0 ? "▼" + -t.d : "−"}</span>
+      </div>`).join("") + `
+      <div class="mrow">
+        <span class="magenta">AIの進化</span>
+        <span class="bar">${blocks(1, 3, 15, "var(--t-magenta)")}</span>
+        <span class="v">Lv1</span>
+        <span class="d muted"></span>
+      </div>`;
+    $("#eraBar").textContent = ERAS.map((_, i) => i < CURRENT_ERA ? "■" : i === CURRENT_ERA ? "▣" : "□").join("");
+  }
+
+  function renderBoard() {
+    let html = `<svg class="road" aria-hidden="true"><path class="edge"/><path class="base"/></svg>`;
+    ERAS.forEach((era, r) => {
+      const cur = r === CURRENT_ERA ? "current" : "";
+      if (cur) html += `<div class="zone" style="--row:${r}"></div>`;
+      html += `<div class="era-label ${cur}" style="--row:${r}"><b>${era.name}</b><small>${era.sub}</small></div>`;
+      era.sq.forEach((type, i) => {
+        const idx = r * 8 + i;
+        const col = r % 2 === 0 ? i : 7 - i; // 蛇行させる
+        const t = TYPES[type];
+        html += `<div class="sq t-${type} ${t.special ? "special" : ""}" data-i="${idx}" title="${idx + 1}マス目 ${t.nm}"
+          style="--c:var(--${t.c});--row:${r};--col:${col}">
+          <span class="no">${idx + 1}</span>
+          <span class="g">${t.g}</span>
+          <span class="nm">${t.nm}</span>
+        </div>`;
+      });
+    });
+    html += `<div class="pieces">${PLAYERS.map((p, k) =>
+      `<div class="piece ${p.turn ? "turn" : ""} ${p.resting ? "rest" : ""}" data-p="${k}" style="--pc:var(${p.c})" title="${p.nm}">${p.nm[0]}</div>`).join("")}</div>`;
+    $("#board").innerHTML = html;
+    markPassed();
+    layout();
+  }
+
+  function markPassed() {
+    const me = turnPlayer();
+    document.querySelectorAll(".sq").forEach(sq => sq.classList.toggle("passed", +sq.dataset.i < me.pos));
+  }
+
+  // マスの中心を測って、道とコマの位置を決める
+  function layout() {
+    const grid = $("#board");
+    const box = grid.getBoundingClientRect();
+    if (!box.width) return;
+    const centers = [];
+    grid.querySelectorAll(".sq").forEach(sq => {
+      const r = sq.getBoundingClientRect();
+      centers[+sq.dataset.i] = [r.left - box.left + r.width / 2, r.top - box.top + r.height / 2];
+    });
+    const svg = grid.querySelector(".road");
+    svg.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+    const d = "M" + centers.map(c => c.map(v => v.toFixed(1)).join(" ")).join(" L");
+    svg.querySelectorAll("path").forEach(path => path.setAttribute("d", d));
+    grid.querySelectorAll(".piece").forEach(el => {
+      const p = PLAYERS[+el.dataset.p];
+      const same = PLAYERS.filter(q => q.pos === p.pos);
+      const k = same.indexOf(p), n = same.length;
+      const [x, y] = centers[p.pos];
+      el.style.left = x + (k - (n - 1) / 2) * 14 + "px";
+      el.style.top = y + "px";
+      el.style.zIndex = k + 1;
+    });
+  }
+  window.addEventListener("resize", layout);
+
+  function renderPlayers() {
+    const row = (k, val, max, text, color) =>
+      `<div class="mrow"><span class="muted">${k}</span><span class="bar">${blocks(val, max, 12, color)}</span><span class="v">${text}</span></div>`;
+    $("#players").innerHTML = PLAYERS.map(p => `
+      <div class="pl ${p.turn ? "turn" : ""} ${p.resting ? "resting" : ""}">
+        <div class="pl-head">
+          <span class="chip" style="--pc:var(${p.c});width:22px;height:22px;font-size:13px">${p.nm[0]}</span>
+          <span><span class="name">${p.nm}</span> <span class="route">${p.route}</span></span>
+          <span class="state ${p.resting ? "red" : "muted"}">${p.turn ? "手番" : p.resting ? "休職中" : p.pos + 1 + "マス目"}</span>
+        </div>
+        ${row("お金", p.money, 600, p.money + "万", "var(--title)")}
+        ${row("スキル", p.skill, 25, p.skill, "var(--t-cyan)")}
+        ${row("メンタル", p.mental, 10, p.mental + "/10", p.mental <= 3 ? "var(--t-red)" : "var(--t-green)")}
+        ${row("評判", p.rep, 20, p.rep, "var(--t-magenta)")}
+        <div class="stack">技術: <span>${p.techs.join(", ")}</span></div>
+      </div>`).join("");
+  }
+
+  const RESULTS = [
+    { nm: "ミナミ", c: "--p2", title: "評判で勝ち切ったマネージャー", parts: [41, 18, 34, 3, 15] },
+    { nm: "あなた", c: "--p1", title: "AIを使いこなしたスペシャリスト", parts: [38, 40, 16, 6, 0] },
+    { nm: "ケン", c: "--p3", title: "古いシステムで一発逆転", parts: [52, 30, 10, 8, 0] },
+    { nm: "ユイ", c: "--p4", title: "燃え尽きたWebエンジニア", parts: [24, 22, 14, 0, 0] },
+  ];
+  function renderPodium() {
+    const colors = ["var(--event)", "var(--study)", "var(--change)", "var(--job)", "var(--fire)"];
+    const sorted = RESULTS.map(r => ({ ...r, total: r.parts.reduce((a, b) => a + b, 0) })).sort((a, b) => b.total - a.total);
+    const max = sorted[0].total;
+    $("#podium").innerHTML = sorted.map((r, i) => `
+      <div class="rank ${i === 0 ? "first" : ""}">
+        <span class="pos">${i + 1}</span>
+        <div>
+          <div class="who"><span class="chip" style="--pc:var(${r.c})">${r.nm[0]}</span>${r.nm}${i === 0 ? `<span class="badge">優勝</span>` : ""}</div>
+          <div class="ttl">${r.title}</div>
+        </div>
+        <div class="score">${r.total}<small> 点</small></div>
+        <div class="breakdown" style="width:${r.total / max * 100}%">${r.parts.map((v, j) => `<i style="width:${v / r.total * 100}%;background:${colors[j]}"></i>`).join("")}</div>
+      </div>`).join("");
+  }
+
+  // ---- 画面の切り替え ----
+  let current = "title";
+  function show(name) {
+    current = name;
+    const target = name === "card" ? "game" : name;
+    document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id === target));
+    document.querySelectorAll(".fkeys [data-screen]").forEach(b => b.classList.toggle("on", b.dataset.screen === name));
+    $("#overlay").classList.toggle("open", name === "card");
+    if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
+    if (name !== "card") window.scrollTo(0, 0);
+    requestAnimationFrame(layout);
+  }
+  document.querySelectorAll("[data-screen]").forEach(b => b.addEventListener("click", () => show(b.dataset.screen)));
+  document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => show(b.dataset.go)));
+  document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => show("game")));
+
+  document.querySelectorAll(".radio, .toggle").forEach(group => group.addEventListener("click", e => {
+    if (e.target.tagName !== "BUTTON") return;
+    group.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === e.target));
+  }));
+  $("#copy").addEventListener("click", e => { e.target.textContent = "コピーしました"; setTimeout(() => e.target.textContent = "コピー", 1400); });
+
+  function toggleTheme() {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+  }
+  $("#theme").addEventListener("click", toggleTheme);
+
+  // ---- 見た目だけのサイコロ ----
+  const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+  function setDie(n) {
+    const die = $("#dice");
+    die.classList.toggle("one", n === 1);
+    die.setAttribute("aria-label", `サイコロ: ${n}`);
+    die.innerHTML = Array.from({ length: 9 }, (_, i) => `<i class="${PIPS[n].includes(i) ? "on" : ""}"></i>`).join("");
+  }
+  setDie(5);
+
+  $("#aiCard").addEventListener("click", e => {
+    const on = e.currentTarget.classList.toggle("on");
+    $("#cmd").textContent = on ? "./roll --ai-pair" : "./roll";
+  });
+
+  let rolling = false;
+  async function roll() {
+    if (rolling) return;
+    rolling = true;
+    const die = $("#dice"), btn = $("#roll");
+    btn.disabled = true;
+    die.classList.add("rolling");
+    const timer = setInterval(() => setDie(1 + Math.floor(Math.random() * 6)), 80);
+    await sleep(900);
+    clearInterval(timer);
+    die.classList.remove("rolling");
+    const n = 1 + Math.floor(Math.random() * 6);
+    const bonus = $("#aiCard").classList.contains("on") ? 2 : 0;
+    setDie(n);
+    await sleep(250);
+
+    // 1マスずつ跳ねながら進む
+    const me = turnPlayer();
+    const piece = document.querySelector(`.piece[data-p="${PLAYERS.indexOf(me)}"]`);
+    piece.classList.remove("turn");
+    for (let s = 0; s < n + bonus && me.pos < 39; s++) {
+      me.pos++;
+      piece.classList.remove("hop"); void piece.offsetWidth; piece.classList.add("hop");
+      layout();
+      await sleep(240);
+    }
+    piece.classList.add("turn");
+    markPassed();
+    const sq = document.querySelector(`.sq[data-i="${me.pos}"]`);
+    sq.classList.remove("land"); void sq.offsetWidth; sq.classList.add("land");
+
+    const type = ERAS[Math.floor(me.pos / 8)].sq[me.pos % 8];
+    const lv = { fire: "error", event: "warn", ai: "ai" }[type] || "info";
+    $("#log").insertAdjacentHTML("afterbegin",
+      `<div><span class="muted">T15</span><span class="lv ${lv}">${lv.toUpperCase()}</span><span><b style="color:var(--p1)">あなた</b> は ${n}${bonus ? "+2" : ""} 進んで、${me.pos + 1}マス目の${TYPES[type].nm}に止まった</span></div>`);
+    btn.disabled = false;
+    rolling = false;
+    if (type === "event") { await sleep(500); show("card"); }
+  }
+  $("#roll").addEventListener("click", roll);
+
+  // ---- キーボード操作 ----
+  document.addEventListener("keydown", e => {
+    if (e.target.tagName === "INPUT") return;
+    const screens = ["title", "game", "card", "result"];
+    if (/^[1-4]$/.test(e.key)) show(screens[+e.key - 1]);
+    else if (e.key.toLowerCase() === "t") toggleTheme();
+    else if (e.key === "Escape" && current === "card") show("game");
+    else if (e.key === "Enter" && current === "game" && e.target.tagName !== "BUTTON") { e.preventDefault(); roll(); }
+  });
+
+  renderTrend();
+  renderBoard();
+  renderPlayers();
+  renderPodium();
+  show(location.hash.slice(1) || "title");
+</script>
+</body>
+</html>
