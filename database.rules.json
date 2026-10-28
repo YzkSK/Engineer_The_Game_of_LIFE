@@ -1,0 +1,33 @@
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        ".read": "auth != null",
+        "meta": {
+          ".write": "(!data.exists() && newData.child('hostUid').val() == auth.uid) || data.child('hostUid').val() == auth.uid",
+          ".validate": "newData.hasChildren(['hostUid', 'status'])",
+          "hostUid": { ".validate": "newData.isString() && newData.val().length <= 128 && (!data.exists() || data.val() == newData.val())" },
+          "status": { ".validate": "newData.val() == 'lobby' || newData.val() == 'playing' || newData.val() == 'finished'" },
+          "createdAt": { ".validate": "newData.isNumber()" }
+        },
+        "players": {
+          "$pid": {
+            ".write": "root.child('rooms/' + $room + '/meta/status').val() == 'lobby' && ((auth.uid == $pid && newData.child('isCpu').val() == false) || root.child('rooms/' + $room + '/meta/hostUid').val() == auth.uid)",
+            ".validate": "newData.hasChildren(['name', 'isCpu', 'order']) && $pid.length <= 128",
+            "name": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 20" },
+            "isCpu": { ".validate": "newData.isBoolean()" },
+            "order": { ".validate": "newData.isNumber()" }
+          }
+        },
+        "actions": {
+          "$n": {
+            ".write": "!data.exists() && newData.exists() && ((newData.child('by').val() == auth.uid && root.child('rooms/' + $room + '/players/' + auth.uid).exists()) || (root.child('rooms/' + $room + '/meta/hostUid').val() == auth.uid && root.child('rooms/' + $room + '/players/' + newData.child('by').val() + '/isCpu').val() == true)) && (newData.child('type').val() != 'start' || root.child('rooms/' + $room + '/meta/hostUid').val() == auth.uid)",
+            ".validate": "$n.matches(/^[0-9]{6}$/) && newData.hasChildren(['by', 'type'])",
+            "by": { ".validate": "newData.isString() && newData.val().length <= 128" },
+            "type": { ".validate": "newData.val() == 'start' || newData.val() == 'roll' || newData.val() == 'learnTech' || newData.val() == 'useAiCard' || newData.val() == 'endTurn'" }
+          }
+        }
+      }
+    }
+  }
+}

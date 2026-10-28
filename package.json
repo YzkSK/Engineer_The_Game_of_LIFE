@@ -1,0 +1,20 @@
+{
+  "name": "engineer-life-game",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/preact": "^6.1.1",
+    "astro": "^7.4.2",
+    "firebase": "^13.1.0",
+    "preact": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "typescript": "^7.0.2"
+  }
+}
