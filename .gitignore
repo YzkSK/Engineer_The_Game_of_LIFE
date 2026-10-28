@@ -1,0 +1,19 @@
+node_modules
+dist
+.astro
+
+# env (Firebase設定値など)
+.env
+.env.*
+!.env.example
+
+# Firebase CLI
+.firebase/
+firebase-debug.log*
+database-debug.log*
+
+# OS / editor
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+*.log
