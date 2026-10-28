@@ -1,9 +1,53 @@
+---
+import '../styles/global.css';
+---
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>エンジニア人生ゲーム</title>
   </head>
   <body>
-    <h1>エンジニア人生ゲーム</h1>
+    <div class="title-wrap">
+      <div>
+        <h1 class="hero-title">エンジニア<br />人生ゲーム</h1>
+        <p class="hero-lead">
+          新卒から定年まで、30年分のエンジニア人生をすごろくで進みます。流行りの技術を追うか、古い技術に賭けるか。途中で AI が現れて、それまでの常識が変わります。最後に満足度が一番高い人の勝ちです。
+        </p>
+        <div class="ruler">
+          <div class="ruler-cells">
+            <div><b>新卒期</b><small>研修と配属</small></div>
+            <div><b>若手期</b><small>案件と障害対応</small></div>
+            <div class="ai"><b>AI登場</b><small>カードが配られる</small></div>
+            <div><b>ベテラン期</b><small>技術の価値が動く</small></div>
+            <div><b>終盤</b><small>満足度を仕上げる</small></div>
+          </div>
+        </div>
+      </div>
+
+      <section class="win">
+        <h2 class="win-t">部屋の設定</h2>
+        <div class="win-b">
+          <label for="name" style="font-weight:700">あなたの名前</label>
+          <input id="name" class="field-input" placeholder="名前" maxlength="20" />
+          <div class="row">
+            <button id="create" class="btn primary">部屋を作る</button>
+            <span class="muted">作った部屋のURLを友達に送ってください</span>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script>
+      import { createRoom } from '../sync/firebase';
+
+      const input = document.getElementById('name') as HTMLInputElement;
+      input.value = localStorage.getItem('name') ?? '';
+      document.getElementById('create')!.addEventListener('click', async () => {
+        const name = input.value.trim();
+        if (!name) return;
+        localStorage.setItem('name', name);
+        location.href = `${import.meta.env.BASE_URL}room/?id=${await createRoom(name)}`;
+      });
+    </script>
   </body>
 </html>

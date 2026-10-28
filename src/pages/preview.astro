@@ -1,0 +1,15 @@
+---
+// 開発専用: ログインなしでゲーム画面を確認するページ
+import Preview from '../components/Preview';
+import '../styles/global.css';
+---
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>preview</title>
+  </head>
+  <body>
+    {import.meta.env.DEV ? <Preview client:only="preact" /> : <p>not found</p>}
+  </body>
+</html>

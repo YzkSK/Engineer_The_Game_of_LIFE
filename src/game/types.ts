@@ -1,5 +1,5 @@
 export type Tech = 'web' | 'mobile' | 'infra' | 'data' | 'legacy';
-export type SquareType = 'project' | 'fire' | 'study' | 'jobchange' | 'event';
+export type SquareType = 'project' | 'fire' | 'study' | 'jobchange' | 'event' | 'legacy' | 'start' | 'ai' | 'branch' | 'goal';
 
 export interface Player {
   uid: string;
@@ -16,18 +16,21 @@ export interface Player {
   aiActive: boolean; // 次の案件マスでAIカードを使う
   aiUsed: number; // AIカード使用回数(使いすぎるとスキルが伸びない)
   bonus: number; // 満足度ボーナス
+  retired: boolean; // ゴールに着いた
 }
 
 export interface GameState {
   status: 'lobby' | 'playing' | 'finished';
   players: Player[];
   current: number; // 手番プレイヤーの index
-  era: number; // 1..5
-  eraTurn: number; // 現在の時代で経過したラウンド数
+  era: number; // 1..5。最も進んでいるプレイヤーの位置で決まる
+  turn: number; // 全体のラウンド数(1始まり。表示用)
   popularity: Record<Tech, number>; // 1..5
+  prevPopularity: Record<Tech, number>; // 直近の時代替わりの前の人気度(増減表示用)
   aiLevel: number; // 0 = 未登場
   rng: number;
   rolled: number | null; // 今の手番で振った目(振っていなければ null)
+  lastCards: { trend: number; ai: number | null } | null; // 直近の時代替わりで引いたカード(TREND_CARDS / AI_CARDS の index)。演出用
 }
 
 export interface PlayerInit {

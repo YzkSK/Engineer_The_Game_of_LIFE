@@ -7,11 +7,13 @@ export const initialState: GameState = {
   players: [],
   current: 0,
   era: 1,
-  eraTurn: 0,
+  turn: 1,
   popularity: { ...D.INITIAL_POPULARITY },
+  prevPopularity: { ...D.INITIAL_POPULARITY },
   aiLevel: 0,
   rng: 0,
   rolled: null,
+  lastCards: null,
 };
 
 const setCurrent = (s: GameState, p: Player): GameState => ({
@@ -25,30 +27,39 @@ function applyCard(s: GameState, delta: D.Card['delta']): GameState {
   return { ...s, popularity };
 }
 
-function draw(s: GameState, deck: D.Card[]): GameState {
+function draw(s: GameState, deck: D.Card[]): [GameState, number] {
   const [i, rng] = randInt(s.rng, deck.length);
-  return applyCard({ ...s, rng }, deck[i]!.delta);
+  return [applyCard({ ...s, rng }, deck[i]!.delta), i];
 }
 
 function enterEra(s: GameState, era: number): GameState {
-  if (era > D.ERA_TURNS.length) return { ...s, status: 'finished' };
-  s = draw({ ...s, era, eraTurn: 0 }, D.TREND_CARDS);
+  let trend: number;
+  [s, trend] = draw({ ...s, era, prevPopularity: s.popularity }, D.TREND_CARDS);
+  let ai: number | null = null;
+  s = { ...s, lastCards: { trend, ai } };
   if (era >= D.AI_APPEAR_ERA) {
-    s = draw({ ...s, aiLevel: s.aiLevel + 1 }, D.AI_CARDS);
+    [s, ai] = draw({ ...s, aiLevel: s.aiLevel + 1 }, D.AI_CARDS);
+    s = { ...s, lastCards: { trend, ai } };
     s = { ...s, players: s.players.map((p) => ({ ...p, aiCards: p.aiCards + 1 })) }; // 仮: 時代ごとに1枚配布
   }
   return s;
 }
 
-function endRound(s: GameState): GameState {
-  const eraTurn = s.eraTurn + 1;
-  return eraTurn >= D.ERA_TURNS[s.era - 1]! ? enterEra(s, s.era + 1) : { ...s, eraTurn };
+// 最も進んでいるプレイヤーの位置まで時代を進める(複数段飛んだら1段ずつ)。全員引退なら終了
+function advance(s: GameState): GameState {
+  const target = Math.floor(Math.max(...s.players.map((p) => p.position)) / D.ERA_SIZE) + 1;
+  while (s.era < target) s = enterEra(s, s.era + 1);
+  return s.players.every((p) => p.retired) ? { ...s, status: 'finished' } : s;
 }
 
 // 止まったマスの効果
 function resolveSquare(s: GameState, p: Player): GameState {
   const gain = (n: number) => (p.aiUsed >= D.AI_OVERUSE ? 0 : n);
   switch (D.BOARD[p.position]) {
+    // start / ai は効果なし(AI登場は時代で起きる)。branch(分かれ道)は未実装
+    case 'goal':
+      p = { ...p, retired: true };
+      break;
     case 'project': {
       let money = D.PROJECT_BASE + D.PROJECT_PER_POP * p.techs.reduce((a, t) => a + s.popularity[t], 0);
       if (p.aiActive) {
@@ -70,6 +81,9 @@ function resolveSquare(s: GameState, p: Player): GameState {
     case 'jobchange':
       if (p.reputation >= 3) p = { ...p, money: p.money + 30 }; // 仮: 評判が高いと好条件
       break;
+    case 'legacy':
+      if (p.techs.includes('legacy')) p = { ...p, money: p.money + D.LEGACY_SQUARE_REWARD };
+      break;
     case 'event': {
       const [r, rng] = randInt(s.rng, 3);
       s = { ...s, rng };
@@ -80,17 +94,17 @@ function resolveSquare(s: GameState, p: Player): GameState {
       break;
     }
   }
-  if (p.mental <= 0) p = { ...p, mental: D.REST_MENTAL, restTurns: p.restTurns + D.REST_TURNS };
+  if (!p.retired && p.mental <= 0) p = { ...p, mental: D.REST_MENTAL, restTurns: p.restTurns + D.REST_TURNS };
   return setCurrent(s, p);
 }
 
 function endTurn(s: GameState): GameState {
   s = { ...s, rolled: null };
   for (;;) {
-    s = { ...s, current: (s.current + 1) % s.players.length };
-    if (s.current === 0) s = endRound(s);
-    if (s.status === 'finished') return s;
+    const next = (s.current + 1) % s.players.length;
+    s = { ...s, current: next, turn: next === 0 ? s.turn + 1 : s.turn };
     const p = s.players[s.current]!;
+    if (p.retired) continue;
     if (p.restTurns <= 0) return s;
     s = setCurrent(s, { ...p, restTurns: p.restTurns - 1 });
   }
@@ -100,7 +114,7 @@ export function reduce(s: GameState, a: Action): GameState {
   if (a.type === 'start') {
     if (s.status !== 'lobby' || a.players.length < 1) return s;
     const players: Player[] = a.players.map((p) => ({
-      ...p, ...D.START, techs: [], position: 0, restTurns: 0, aiCards: 0, aiActive: false, aiUsed: 0, bonus: 0,
+      ...p, ...D.START, techs: [], position: 0, restTurns: 0, aiCards: 0, aiActive: false, aiUsed: 0, bonus: 0, retired: false,
     }));
     return enterEra({ ...initialState, status: 'playing', players, rng: a.seed }, 1);
   }
@@ -108,10 +122,10 @@ export function reduce(s: GameState, a: Action): GameState {
   if (s.status !== 'playing' || !p || p.uid !== a.by) return s;
   switch (a.type) {
     case 'roll': {
-      if (s.rolled !== null) return s;
+      if (s.rolled !== null || p.retired) return s;
       const [r, rng] = randInt(s.rng, 6);
-      const moved = { ...p, position: (p.position + r + 1) % D.BOARD.length };
-      return resolveSquare({ ...s, rng, rolled: r + 1 }, moved);
+      const moved = { ...p, position: Math.min(p.position + r + 1, D.GOAL) };
+      return advance(resolveSquare({ ...s, rng, rolled: r + 1 }, moved));
     }
     case 'learnTech':
       if (s.rolled !== null || p.techs.includes(a.tech) || !D.TECHS.includes(a.tech) || p.money < D.LEARN_COST) return s;
