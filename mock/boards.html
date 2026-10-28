@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>すごろく盤の候補</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1+Code:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* トークンは index.html と同じ */
+  :root {
+    --desk: #e4e8da; --panel: #fbfcf5; --panel-2: #eef1e4;
+    --frame: #2d5a43; --ink: #1b2620; --muted: #66756b; --title: #7a4e00;
+    --sel: #2d5a43; --sel-ink: #fbfcf5; --drop: #c3cab4;
+    --bar: #2d5a43; --bar-ink: #fbfcf5;
+    --job: #8fdcaa; --fire: #ffaa9e; --study: #a9c9ff; --change: #dcb6ff; --event: #ffdb70;
+    --special: #1b2620; --tile-ink: #1b2620; --special-ink: #fbfcf5;
+    --t-red: #b3261e; --t-green: #1d7a46; --t-magenta: #7b3fb0; --t-cyan: #0b6f86;
+    --p1: #c2347a; --p2: #0b7f95; --p3: #4f8a0b; --p4: #c46a0a;
+    --dot: "DotGothic16", "M PLUS 1 Code", monospace;
+    font-family: "M PLUS 1 Code", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --desk: #0b1a3d; --panel: #17357f; --panel-2: #11295f;
+      --frame: #9cd6ff; --ink: #eef3ff; --muted: #9fb0d6; --title: #ffe066;
+      --sel: #9cd6ff; --sel-ink: #0b1a3d; --drop: #050c1e;
+      --bar: #c8d2ea; --bar-ink: #0b1a3d;
+      --job: #4fd27a; --fire: #ff6b5e; --study: #8cc4ff; --change: #d99bff; --event: #ffd84d;
+      --special: #f2f4fa; --tile-ink: #0b1a3d; --special-ink: #0b1a3d;
+      --t-red: #ff9a90; --t-green: #7ee6a0; --t-magenta: #e6b8ff; --t-cyan: #9cd6ff;
+      --p1: #ff8fc7; --p2: #7ef0ff; --p3: #c4f27a; --p4: #ffb766;
+    }
+  }
+  :root[data-theme="dark"] {
+    --desk: #0b1a3d; --panel: #17357f; --panel-2: #11295f;
+    --frame: #9cd6ff; --ink: #eef3ff; --muted: #9fb0d6; --title: #ffe066;
+    --sel: #9cd6ff; --sel-ink: #0b1a3d; --drop: #050c1e;
+    --bar: #c8d2ea; --bar-ink: #0b1a3d;
+    --job: #4fd27a; --fire: #ff6b5e; --study: #8cc4ff; --change: #d99bff; --event: #ffd84d;
+    --special: #f2f4fa; --tile-ink: #0b1a3d; --special-ink: #0b1a3d;
+    --t-red: #ff9a90; --t-green: #7ee6a0; --t-magenta: #e6b8ff; --t-cyan: #9cd6ff;
+    --p1: #ff8fc7; --p2: #7ef0ff; --p3: #c4f27a; --p4: #ffb766;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; color: var(--ink); font-size: 14px; line-height: 1.65;
+    background: radial-gradient(circle, var(--panel-2) 1px, transparent 1.5px) 0 0 / 8px 8px, var(--desk);
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--title); outline-offset: 2px; }
+  .muted { color: var(--muted); }
+
+  .page { max-width: 1440px; margin: 0 auto; padding: 32px 16px 48px; display: grid; gap: 28px; }
+  .win { position: relative; min-width: 0; background: var(--panel); border: 4px double var(--frame); box-shadow: 8px 8px 0 var(--drop); }
+  .win-t { position: absolute; top: -.85em; left: 50%; transform: translateX(-50%); margin: 0; padding: 0 1ch; background: var(--panel); color: var(--title); font: 400 16px/1.4 var(--dot); white-space: nowrap; }
+  .win-b { padding: 22px 18px 16px; }
+  .btn { border: 0; padding: 7px 16px; cursor: pointer; font-weight: 700; background: var(--title); color: var(--sel-ink); box-shadow: 4px 4px 0 var(--drop); }
+  .btn:active { transform: translate(4px, 4px); box-shadow: none; }
+  .btn:disabled { opacity: .55; cursor: wait; }
+
+  .intro { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+  .intro h1 { margin: 0; font: 400 clamp(26px, 3.4vw, 36px)/1.2 var(--dot); }
+  .intro p { margin: 4px 0 0; max-width: 46em; }
+  .intro .sp { flex: 1; }
+  .rolled { font: 400 22px/1 var(--dot); min-width: 4ch; }
+
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 28px; }
+  .notes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; margin-top: 18px; font-size: 12px; }
+  .notes div::before { margin-right: 6px; font-weight: 700; }
+  .notes .pro::before { content: "+"; color: var(--t-green); }
+  .notes .con::before { content: "−"; color: var(--t-red); }
+
+  /* ---------- 共通の盤の骨組み ---------- */
+  .bd { position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); }
+  .bd .sq { position: relative; z-index: 2; aspect-ratio: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .road { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+  .road path { fill: none; }
+  .pieces { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+  .piece {
+    position: absolute; width: 22px; height: 22px; margin: -30px 0 0 -11px; display: grid; place-items: center;
+    background: var(--pc); color: var(--sel-ink); font: 400 14px/1 var(--dot);
+    box-shadow: 2px 2px 0 var(--drop), 0 0 0 2px var(--panel);
+    transition: left .2s steps(2), top .2s steps(2);
+  }
+  .piece::after { content: ""; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); border: 4px solid transparent; border-top-color: var(--pc); border-bottom: 0; }
+  .piece.turn { animation: blink-piece 1s steps(1) infinite; }
+  .piece.hop { animation: hop .2s steps(2); }
+  .piece.rest { opacity: .55; }
+  @keyframes blink-piece { 50% { box-shadow: 2px 2px 0 var(--drop), 0 0 0 2px var(--title); } }
+  @keyframes hop { 50% { transform: translateY(-12px); } }
+
+  /* ---------- A 回り双六 ---------- */
+  .spiral { border: 3px solid var(--frame); box-shadow: 6px 6px 0 var(--drop); }
+  .spiral .sq { background: var(--panel); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--frame) 55%, transparent); padding-top: 18%; }
+  .spiral .sq::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 22%; background: var(--c); }
+  .spiral .sq .g { font: 400 20px/1.1 var(--dot); }
+  .spiral .sq .nm { font-size: 10px; font-weight: 700; white-space: nowrap; }
+  .spiral .sq .no { position: absolute; top: 0; right: 4px; font-size: 9px; color: var(--tile-ink); line-height: 1.7; }
+  .spiral .sq .era { position: absolute; top: 0; left: 4px; font-size: 9px; font-weight: 700; color: var(--tile-ink); line-height: 1.7; }
+  .spiral .sq.cur { box-shadow: inset 0 0 0 2px var(--title); }
+  .spiral .sq.passed .g, .spiral .sq.passed .nm { opacity: .35; }
+  .spiral .sq.special { background: var(--special); color: var(--special-ink); }
+  .spiral .center {
+    grid-column: 3 / 7; grid-row: 3 / 5; z-index: 2; display: grid; place-content: center; text-align: center;
+    border: 3px double var(--frame); margin: 10%; background: var(--panel-2);
+  }
+  .spiral .center b { font: 400 clamp(16px, 2.2vw, 26px)/1.25 var(--dot); }
+  .spiral .center small { color: var(--muted); font-size: 11px; }
+  .spiral .road path { stroke: var(--frame); stroke-width: 1.5; stroke-dasharray: 2 6; opacity: .6; }
+
+  /* ---------- B 路線図 ---------- */
+  .subway { row-gap: 30px; padding: 26px 4px 6px; }
+  .subway .road path { stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+  .subway .stn {
+    width: 46%; aspect-ratio: 1 / 1; border-radius: 50%; display: grid; place-items: center;
+    background: var(--special); color: var(--special-ink); border: 4px solid var(--lc);
+    font: 400 13px/1 var(--dot);
+  }
+  .subway .special .stn { border-radius: 8px; width: 60%; border-width: 5px; box-shadow: 0 0 0 2px var(--ink); }
+  .subway .nm { position: absolute; top: calc(50% + 22%); font-size: 10px; font-weight: 700; white-space: nowrap; }
+  .subway .line-tag {
+    position: absolute; bottom: calc(50% + 26%); left: 50%; transform: translateX(-50%); white-space: nowrap;
+    padding: 0 6px; font-size: 10px; font-weight: 700; background: var(--lc); color: var(--tile-ink);
+  }
+  .subway .line-tag.cur { outline: 2px solid var(--title); }
+  .subway .passed .stn, .subway .passed .nm { opacity: .4; }
+
+  /* ---------- C 回路基板(基板の色はテーマに関係なく固定) ---------- */
+  .pcb-wrap {
+    position: relative; padding: 30px 18px 34px; border-radius: 8px;
+    background: radial-gradient(circle, rgba(255,255,255,.07) 1px, transparent 1.5px) 0 0 / 10px 10px, #0e3b29;
+    box-shadow: inset 0 0 0 2px #0a2c1f, 6px 6px 0 var(--drop);
+  }
+  .pcb-wrap::before, .pcb-wrap::after {
+    content: ""; position: absolute; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--panel); box-shadow: 0 0 0 3px #c8963e; top: 8px; left: 8px;
+  }
+  .pcb-wrap::after { left: auto; right: 8px; }
+  .pcb-wrap .silk { position: absolute; right: 16px; bottom: 8px; font-size: 10px; color: rgba(255,255,255,.55); letter-spacing: .08em; }
+  .pcb { row-gap: 26px; }
+  .pcb .road .trace { stroke: #b9853a; stroke-width: 6; stroke-linejoin: miter; }
+  .pcb .road .shine { stroke: #e3b867; stroke-width: 1.5; stroke-linejoin: miter; }
+  .pcb .ic {
+    position: relative; width: 62%; aspect-ratio: 1 / 1; display: grid; place-items: center; border-radius: 3px;
+    background: #16191e; box-shadow: 0 2px 0 #000;
+  }
+  .pcb .ic::before, .pcb .ic::after {
+    content: ""; position: absolute; left: 14%; right: 14%; height: 5px;
+    background: repeating-linear-gradient(90deg, #c9ccd2 0 3px, transparent 3px 7px);
+  }
+  .pcb .ic::before { top: -5px; }
+  .pcb .ic::after { bottom: -5px; }
+  .pcb .ic i { position: absolute; top: 4px; left: 4px; width: 5px; height: 5px; border-radius: 50%; background: #2a2e35; }
+  .pcb .ic .g { font: 400 15px/1 var(--dot); color: var(--c); text-shadow: 0 0 6px color-mix(in srgb, var(--c) 60%, transparent); }
+  .pcb .ref { position: absolute; bottom: calc(50% + 31% + 6px); font-size: 9px; color: rgba(255,255,255,.6); white-space: nowrap; }
+  .pcb .ref.era { color: #ffe066; font-weight: 700; }
+  .pcb .nm { position: absolute; top: calc(50% + 31% + 6px); font-size: 9px; color: rgba(255,255,255,.85); white-space: nowrap; }
+  .pcb .special .ic { background: #d9dbe0; }
+  .pcb .special .ic .g { color: #16191e; text-shadow: none; }
+  .pcb .passed .ic { filter: brightness(.55); }
+  .pcb .piece { box-shadow: 2px 2px 0 #000, 0 0 0 2px #0e3b29; }
+
+  /* ---------- D ダンジョン ---------- */
+  .ascii { margin: 0; font: 15px/1.45 "M PLUS 1 Code", monospace; overflow-x: auto; white-space: pre; }
+  .ascii .w { color: var(--muted); }
+  .ascii .cur { color: var(--title); }
+  .ascii .dim { opacity: .35; }
+  .ascii .lbl { color: var(--ink); font-weight: 700; }
+  .ascii .me { background: var(--p1); color: var(--sel-ink); font-weight: 700; animation: blink-bg 1s steps(1) infinite; }
+  @keyframes blink-bg { 50% { background: transparent; color: var(--p1); } }
+  .ascii-legend { margin-top: 12px; font-size: 12px; display: flex; flex-wrap: wrap; gap: 2px 14px; }
+
+  /* ---------- E マップ ---------- */
+  .map-scroll { overflow-x: auto; padding: 0 8px 8px 0; }
+  .map {
+    position: relative; min-width: 760px; aspect-ratio: 1000 / 620; container-type: inline-size;
+    background: var(--panel-2); border: 4px double var(--frame); box-shadow: 6px 6px 0 var(--drop);
+  }
+  .map-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .map .grid line { stroke: var(--frame); stroke-opacity: .12; }
+  .map .grid text { fill: var(--muted); font: 11px "M PLUS 1 Code", monospace; }
+  .map .region rect { stroke-width: 1.5; stroke-dasharray: 6 5; }
+  .map .region.cur rect { stroke: var(--title); stroke-width: 3; stroke-dasharray: none; }
+  .map .region text { font: 20px var(--dot); fill: var(--ink); }
+  .map .region text tspan { font: 12px "M PLUS 1 Code", monospace; fill: var(--muted); }
+  .map .region.cur text { fill: var(--title); }
+  .map .deco text { font: 18px "M PLUS 1 Code", monospace; fill: var(--muted); opacity: .6; }
+  .map .roads path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .map .roads .edge { stroke: var(--frame); stroke-width: 18; }
+  .map .roads .base { stroke: var(--panel); stroke-width: 11; }
+  .map .roads .dash { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 9; }
+  .map .compass { font: 16px var(--dot); fill: var(--ink); }
+  .map .tile {
+    position: absolute; z-index: 2; width: 3.9%; aspect-ratio: 1 / 1; transform: translate(-50%, -50%);
+    display: grid; place-items: center; background: var(--c); color: var(--tile-ink);
+    box-shadow: 3px 3px 0 var(--drop); font: 400 1.55cqw/1 var(--dot);
+  }
+  .map .tile.special { background: var(--special); color: var(--special-ink); }
+  .map .tile.t-ai { background: repeating-linear-gradient(45deg, var(--change) 0 5px, color-mix(in srgb, var(--change) 65%, var(--panel)) 5px 10px); color: var(--tile-ink); }
+  .map .tile.t-goal { background: repeating-conic-gradient(var(--special) 0 25%, var(--special-ink) 0 50%) 0 0 / 10px 10px; }
+  .map .tile.t-goal span { background: var(--special); color: var(--special-ink); padding: 0 3px; }
+  .map .tile.passed::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle, var(--panel) 1px, transparent 1.4px) 0 0 / 5px 5px; opacity: .65; }
+  .map .tile .no { position: absolute; top: -1.35cqw; left: 0; font: 400 .95cqw/1 "M PLUS 1 Code", monospace; color: var(--muted); }
+  .map-legend { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 14px; font-size: 12px; }
+  .map-legend span { display: flex; align-items: center; gap: 6px; }
+  .map-legend i { width: 12px; height: 12px; background: var(--c); }
+
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .notes { grid-template-columns: 1fr; }
+    .bd .nm, .spiral .sq .no, .pcb .ref:not(.era) { display: none; }
+    .spiral .sq .g { font-size: 13px; }
+    .spiral .sq .era { font-size: 8px; }
+    .subway .stn { font-size: 9px; border-width: 3px; }
+    .subway .line-tag { font-size: 8px; padding: 0 3px; }
+    .subway .road path { stroke-width: 6; }
+    .pcb .ic .g { font-size: 10px; }
+    .pcb .ref.era { font-size: 8px; }
+    .ascii { font-size: 11px; }
+    .piece { width: 15px; height: 15px; margin: -21px 0 0 -7px; font-size: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <section class="win">
+    <h2 class="win-t">すごろく盤の候補</h2>
+    <div class="win-b intro">
+      <div>
+        <h1>5つの盤を見比べる</h1>
+        <p>どれも同じ40マス・5つの時代・4人の配置です。サイコロを振ると、全部の盤で「あなた」のコマが同時に進みます。</p>
+      </div>
+      <span class="sp"></span>
+      <span class="rolled" id="rolled" aria-live="polite"></span>
+      <button class="btn" id="roll">サイコロを振る</button>
+      <button class="btn" id="reset" style="background:var(--bar);color:var(--bar-ink)">最初に戻す</button>
+    </div>
+  </section>
+
+  <section class="win">
+    <h2 class="win-t">E マップ(新案)</h2>
+    <div class="win-b">
+      <div id="boardE"></div>
+      <div class="map-legend">
+        <span><i style="--c:var(--job)"></i>案件</span>
+        <span><i style="--c:var(--fire)"></i>炎上</span>
+        <span><i style="--c:var(--study)"></i>勉強</span>
+        <span><i style="--c:var(--change)"></i>転職</span>
+        <span><i style="--c:var(--event)"></i>イベント</span>
+        <span><i style="--c:var(--special)"></i>ふりだし・分かれ道・上がり</span>
+      </div>
+      <div class="notes">
+        <div class="pro">時代が「場所」になり、人生のどこまで来たかが地図で分かる</div>
+        <div class="con">マスの配置や道の形は、手で調整する必要がある</div>
+        <div class="pro">行の端での折り返しがなく、道が自然につながる。エリアを増やすのも簡単</div>
+        <div class="con">スマホでは地図を横スクロールして見ることになる</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="win">
+      <h2 class="win-t">A 回り双六</h2>
+      <div class="win-b">
+        <div id="boardA"></div>
+        <div class="notes">
+          <div class="pro">紙のすごろくらしさが一番強い。上がりが真ん中にあって、残りの距離が見える</div>
+          <div class="con">マスが詰まるので、スマホでは小さくなる</div>
+          <div class="pro">ふりだし・上がりなど、すごろくの言葉がそのまま使える</div>
+          <div class="con">時代の区切りが、マス上の小さな札だけになる</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="win">
+      <h2 class="win-t">B 路線図</h2>
+      <div class="win-b">
+        <div id="boardB"></div>
+        <div class="notes">
+          <div class="pro">時代ごとに路線の色が変わり、今どの時代にいるかがすぐ分かる</div>
+          <div class="con">すごろくより地図に見える</div>
+          <div class="pro">マスを駅として扱うので、名前を付けて覚えやすい</div>
+          <div class="con">マスの種類が色ではなく記号と文字だけになる</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="win">
+      <h2 class="win-t">C 回路基板</h2>
+      <div class="win-b">
+        <div id="boardC"></div>
+        <div class="notes">
+          <div class="pro">エンジニアらしさが一番強い。マスがICチップ、道が配線</div>
+          <div class="con">基板の緑が強く、ほかの画面の青と並ぶと浮きやすい</div>
+          <div class="pro">チップの番号(U18 など)がマス番号の代わりになる</div>
+          <div class="con">飾りが多く、情報が埋もれやすい</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="win">
+      <h2 class="win-t">D ダンジョン</h2>
+      <div class="win-b">
+        <pre class="ascii" id="boardD"></pre>
+        <div class="ascii-legend" id="legendD"></div>
+        <div class="notes">
+          <div class="pro">全部文字だけ。ターミナルらしさが一番強く、描画も軽い</div>
+          <div class="con">記号の意味を覚える必要がある</div>
+          <div class="pro">時代を「部屋」、移動を「通路」として見せられる</div>
+          <div class="con">スマホでは文字が小さくなる</div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  // ---- 盤のデータ(index.html と同じ) ----
+  const TYPES = {
+    job:    { g: "¥+",  nm: "案件",     c: "job",    sym: "$" },
+    fire:   { g: "!!",  nm: "炎上",     c: "fire",   sym: "!" },
+    study:  { g: "{}",  nm: "勉強",     c: "study",  sym: "+" },
+    change: { g: "⇄",   nm: "転職",     c: "change", sym: "^" },
+    event:  { g: "??",  nm: "イベント", c: "event",  sym: "?" },
+    start:  { g: ">_",  nm: "ふりだし", c: "special", sym: "<", special: true },
+    ai:     { g: "AI",  nm: "AI登場",   c: "change", sym: "&", special: true },
+    branch: { g: "├┬",  nm: "分かれ道", c: "special", sym: "Y", special: true },
+    goal:   { g: "EOF", nm: "上がり",   c: "special", sym: ">", special: true },
+  };
+  const ERAS = [
+    { name: "新卒期",     line: "job",    sq: ["start","study","job","event","study","fire","job","event"] },
+    { name: "若手期",     line: "study",  sq: ["job","fire","job","study","event","change","fire","job"] },
+    { name: "AI登場",     line: "change", sq: ["ai","event","branch","job","study","fire","event","job"] },
+    { name: "ベテラン期", line: "event",  sq: ["job","event","fire","change","job","study","event","fire"] },
+    { name: "終盤",       line: "fire",   sq: ["job","event","study","fire","job","event","job","goal"] },
+  ];
+  const CURRENT_ERA = 2;
+  const START_POS = 18;
+  const PLAYERS = [
+    { nm: "あなた", c: "--p1", pos: START_POS, turn: true, sym: "@" },
+    { nm: "ミナミ", c: "--p2", pos: 20, sym: "2" },
+    { nm: "ケン", c: "--p3", pos: 15, sym: "3" },
+    { nm: "ユイ", c: "--p4", pos: 16, resting: true, sym: "4" },
+  ];
+  const typeAt = (i) => ERAS[Math.floor(i / 8)].sq[i % 8];
+  const eraOf = (i) => Math.floor(i / 8);
+  const me = () => PLAYERS[0];
+  const $ = (s) => document.querySelector(s);
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // ---- マスの並び ----
+  // 行ごとに折り返す1本道
+  const snake = () => Array.from({ length: 40 }, (_, i) => {
+    const r = Math.floor(i / 8), k = i % 8;
+    return [r % 2 === 0 ? k : 7 - k, r];
+  });
+  // 8×6 の外周から内側へ、時計回りの渦巻き(ちょうど40マス)
+  function spiral(w, h) {
+    const out = [];
+    let x0 = 0, y0 = 0, x1 = w - 1, y1 = h - 1;
+    while (x0 <= x1 && y0 <= y1 && out.length < 40) {
+      for (let x = x0; x <= x1; x++) out.push([x, y0]);
+      for (let y = y0 + 1; y <= y1; y++) out.push([x1, y]);
+      for (let x = x1 - 1; x >= x0 && y1 > y0; x--) out.push([x, y1]);
+      for (let y = y1 - 1; y > y0 && x1 > x0; y--) out.push([x0, y]);
+      x0++; y0++; x1--; y1--;
+    }
+    return out.slice(0, 40);
+  }
+
+  // ---- 曲がり角を丸める(または45度に落とす)道 ----
+  function cornerPath(pts, rad, chamfer) {
+    let d = `M${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const [px, py] = pts[i - 1], [x, y] = pts[i], [nx, ny] = pts[i + 1];
+      const v1 = [x - px, y - py], v2 = [nx - x, ny - y];
+      if (Math.abs(v1[0] * v2[1] - v1[1] * v2[0]) < 1e-6) continue;
+      const l1 = Math.hypot(...v1), l2 = Math.hypot(...v2);
+      const r = Math.min(rad, l1 / 2, l2 / 2);
+      const a = [x - v1[0] / l1 * r, y - v1[1] / l1 * r], b = [x + v2[0] / l2 * r, y + v2[1] / l2 * r];
+      d += ` L${a[0]} ${a[1]}` + (chamfer ? ` L${b[0]} ${b[1]}` : ` Q${x} ${y} ${b[0]} ${b[1]}`);
+    }
+    const last = pts[pts.length - 1];
+    return d + ` L${last[0]} ${last[1]}`;
+  }
+
+  // ---- 位置で並べる盤(A・B・C 共通) ----
+  const BOARDS = [];
+
+  function mountPositional(host, opt) {
+    const { kind, cols, coords, tile, extra = "" } = opt;
+    let html = `<svg class="road" aria-hidden="true"></svg>`;
+    coords.forEach(([c, r], i) => {
+      const type = typeAt(i), t = TYPES[type];
+      html += `<div class="sq t-${type} ${t.special ? "special" : ""}" data-i="${i}" title="${i + 1}マス目 ${t.nm}"
+        style="grid-column:${c + 1};grid-row:${r + 1};--c:var(--${t.c});--lc:var(--${ERAS[eraOf(i)].line})">${tile(i, type, t)}</div>`;
+    });
+    html += extra;
+    html += `<div class="pieces">${PLAYERS.map((p, k) =>
+      `<div class="piece ${p.turn ? "turn" : ""} ${p.resting ? "rest" : ""}" data-p="${k}" style="--pc:var(${p.c})" title="${p.nm}">${p.nm[0]}</div>`).join("")}</div>`;
+    host.innerHTML = `<div class="bd ${kind}" style="--cols:${cols}">${html}</div>`;
+    const board = { el: host.firstElementChild, ...opt };
+    BOARDS.push(board);
+    return board;
+  }
+
+  function layoutBoard(b) {
+    const box = b.el.getBoundingClientRect();
+    if (!box.width) return;
+    const centers = [];
+    b.el.querySelectorAll(".sq").forEach(sq => {
+      const r = sq.getBoundingClientRect();
+      centers[+sq.dataset.i] = [r.left - box.left + r.width / 2, r.top - box.top + r.height / 2];
+    });
+    const svg = b.el.querySelector(".road");
+    svg.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+    svg.innerHTML = b.road(centers);
+    b.el.querySelectorAll(".sq").forEach(sq => sq.classList.toggle("passed", +sq.dataset.i < me().pos));
+    b.el.querySelectorAll(".piece").forEach(el => {
+      const p = PLAYERS[+el.dataset.p];
+      const same = PLAYERS.filter(q => q.pos === p.pos);
+      const k = same.indexOf(p), n = same.length;
+      const [x, y] = centers[p.pos];
+      el.style.left = x + (k - (n - 1) / 2) * 14 + "px";
+      el.style.top = y + "px";
+      el.style.zIndex = k + 1;
+    });
+  }
+
+  // A 回り双六
+  mountPositional($("#boardA"), {
+    kind: "spiral", cols: 8, coords: spiral(8, 6),
+    tile: (i, type, t) => `
+      ${i % 8 === 0 ? `<span class="era">時代${eraOf(i) + 1}</span>` : ""}
+      <span class="no">${i + 1}</span>
+      <span class="g">${t.g}</span><span class="nm">${t.nm}</span>`,
+    extra: `<div class="center"><b>エンジニア<br>人生ゲーム</b><small>左上がふりだし、渦の中心が上がり</small></div>`,
+    road: (c) => `<path d="${cornerPath(c, 0, false)}"/>`,
+  });
+  document.querySelectorAll("#boardA .sq").forEach(sq => { if (eraOf(+sq.dataset.i) === CURRENT_ERA) sq.classList.add("cur"); });
+
+  // B 路線図
+  mountPositional($("#boardB"), {
+    kind: "subway", cols: 8, coords: snake(),
+    tile: (i, type, t) => `
+      ${i % 8 === 0 ? `<span class="line-tag ${eraOf(i) === CURRENT_ERA ? "cur" : ""}">${ERAS[eraOf(i)].name}線</span>` : ""}
+      <span class="stn">${t.g}</span><span class="nm">${t.nm}</span>`,
+    road: (c) => ERAS.map((era, e) => {
+      const seg = c.slice(e * 8, Math.min(e * 8 + 9, 40));
+      return `<path d="${cornerPath(seg, 26, false)}" stroke="var(--${era.line})"/>`;
+    }).join(""),
+  });
+
+  // C 回路基板
+  $("#boardC").innerHTML = `<div class="pcb-wrap"><div id="pcbInner"></div><span class="silk">engineer-life rev3 2026</span></div>`;
+  mountPositional($("#pcbInner"), {
+    kind: "pcb", cols: 8, coords: snake(),
+    tile: (i, type, t) => `
+      <span class="ref ${i % 8 === 0 ? "era" : ""}">${i % 8 === 0 ? "時代" + (eraOf(i) + 1) + " " + ERAS[eraOf(i)].name : "U" + (i + 1)}</span>
+      <span class="ic"><i></i><span class="g">${t.g}</span></span><span class="nm">${t.nm}</span>`,
+    road: (c) => {
+      const d = cornerPath(c, 14, true);
+      return `<path class="trace" d="${d}"/><path class="shine" d="${d}"/>`;
+    },
+  });
+
+  // ---- D ダンジョン(文字だけの地図) ----
+  function renderAscii() {
+    const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const lastCol = (r) => r % 2 === 0 ? 7 : 0;
+    const firstCol = (r) => r % 2 === 0 ? 0 : 7;
+    const xOf = (col) => col * 4 + 2;            // "|" の次から " X ." が4文字ずつ
+    const INNER = 8 * 3 + 7;
+    const border = (r, doorTop) => {
+      const chars = ("+" + "-".repeat(INNER) + "+").split("");
+      if (doorTop !== null) chars[xOf(doorTop)] = "#";
+      const cls = r === CURRENT_ERA ? "cur" : "w";
+      return chars.map(ch => ch === "#" ? `<span class="w">#</span>` : `<span class="${cls}">${esc(ch)}</span>`).join("");
+    };
+    const lines = [];
+    ERAS.forEach((era, r) => {
+      const cls = r === CURRENT_ERA ? "cur" : "w";
+      lines.push(border(r, r > 0 ? firstCol(r) : null));
+      let floor = `<span class="${cls}">|</span>`;
+      for (let col = 0; col < 8; col++) {
+        const k = r % 2 === 0 ? col : 7 - col;
+        const i = r * 8 + k;
+        const t = TYPES[typeAt(i)];
+        const here = PLAYERS.find(p => p.pos === i);
+        let cell;
+        if (here) {
+          cell = here.turn
+            ? `<span class="me">${here.sym}</span>`
+            : `<span style="color:var(${here.c});font-weight:700">${here.sym}</span>`;
+        } else {
+          const color = t.special ? "var(--ink)" : `var(--t-${{ job: "green", fire: "red", study: "cyan", change: "magenta", event: "yellow" }[typeAt(i)] || "green"})`;
+          cell = `<span class="${i < me().pos ? "dim" : ""}" style="color:${typeAt(i) === "event" ? "var(--title)" : color};font-weight:700">${esc(t.sym)}</span>`;
+        }
+        floor += ` ${cell} ` + (col < 7 ? `<span class="w">.</span>` : "");
+      }
+      floor += `<span class="${cls}">|</span>  <span class="lbl ${r === CURRENT_ERA ? "cur" : ""}">時代${r + 1} ${era.name}</span>`;
+      lines.push(floor);
+      lines.push(border(r, r < 4 ? lastCol(r) : null));
+      if (r < 4) lines.push(" ".repeat(xOf(lastCol(r))) + `<span class="w">#</span>`);
+    });
+    $("#boardD").innerHTML = lines.join("\n");
+  }
+  $("#legendD").innerHTML = Object.values(TYPES).map(t => `<span><b>${t.sym.replace("<", "&lt;").replace(">", "&gt;")}</b> ${t.nm}</span>`).join("")
+    + PLAYERS.map(p => `<span><b style="color:var(${p.c})">${p.sym}</b> ${p.nm}</span>`).join("");
+
+  // ---- E マップ ----
+  // 地図の座標は 1000×620。時代ごとに道を1本ずつ描き、その上に8マスずつ等間隔で置く
+  const MAP_SEGS = [
+    "M 70 560 C 150 600, 300 590, 300 520 S 90 480, 90 430 S 160 380, 185 355",
+    "M 185 355 C 230 330, 300 300, 290 250 S 80 230, 80 160 S 220 70, 300 110 S 330 190, 350 200",
+    "M 350 200 C 370 300, 380 400, 440 430 S 570 450, 590 380 S 580 240, 640 190",
+    "M 640 190 C 680 170, 690 90, 760 90 S 940 80, 930 150 S 820 260, 740 250 S 690 280, 690 305",
+    "M 690 305 C 690 360, 760 380, 850 370 S 940 420, 900 470 S 720 470, 720 540 S 850 590, 940 575",
+  ];
+  // エリアは重ならない区画として決めておく [x, y, 幅, 高さ]
+  const REGIONS = [
+    { nm: "研修センター", deco: "♣", rect: [40, 365, 300, 240] },
+    { nm: "案件街",       deco: "▤", rect: [40, 45, 300, 300] },
+    { nm: "AI研究所",     deco: "◇", rect: [355, 150, 280, 320] },
+    { nm: "技術の山脈",   deco: "▲", rect: [655, 45, 300, 255] },
+    { nm: "上がりの港",   deco: "〜", rect: [655, 320, 300, 285] },
+  ];
+  const MAP_PTS = [];
+
+  function mountMap(host) {
+    host.innerHTML = `<div class="map-scroll"><div class="map">
+      <svg class="map-svg" viewBox="0 0 1000 620" aria-hidden="true">
+        <g class="grid"></g><g class="regions"></g><g class="deco"></g><g class="roads"></g>
+        <text class="compass" x="955" y="40" text-anchor="middle">N</text>
+        <text class="compass" x="955" y="62" text-anchor="middle">↑</text>
+      </svg>
+      <div class="tiles"></div><div class="pieces"></div>
+    </div></div>`;
+    const svg = host.querySelector("svg");
+    const g = (sel) => svg.querySelector(sel);
+
+    // 方眼と座標
+    let grid = "";
+    for (let x = 100; x < 1000; x += 100) grid += `<line x1="${x}" y1="0" x2="${x}" y2="620"/>`;
+    for (let y = 100; y < 620; y += 100) grid += `<line x1="0" y1="${y}" x2="1000" y2="${y}"/>`;
+    "ABCDEFGHIJ".split("").forEach((c, i) => grid += `<text x="${i * 100 + 50}" y="16" text-anchor="middle">${c}</text>`);
+    for (let i = 0; i < 6; i++) grid += `<text x="8" y="${i * 100 + 56}">${i + 1}</text>`;
+    g(".grid").innerHTML = grid;
+
+    // 道を描いて、8マスずつ等間隔に置く
+    g(".roads").innerHTML = ["edge", "base", "dash"].map(cls =>
+      MAP_SEGS.map(d => `<path class="${cls}" d="${d}"/>`).join("")).join("");
+    const dashes = svg.querySelectorAll(".roads .dash");
+    dashes.forEach((path, e) => {
+      const L = path.getTotalLength();
+      for (let j = 0; j < 8; j++) {
+        const p = path.getPointAtLength(L * (j + 0.5) / 8);
+        MAP_PTS[e * 8 + j] = [p.x, p.y];
+      }
+    });
+
+    // 時代ごとのエリアと名前
+    let regions = "", deco = "";
+    let seed = 7;
+    const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    // 道の上の点(マスとマスの中間も含む)。名前や飾りがここに重ならないようにする
+    const busy = [];
+    MAP_PTS.forEach((p, i) => {
+      busy.push(p);
+      if (i < 39) busy.push([(p[0] + MAP_PTS[i + 1][0]) / 2, (p[1] + MAP_PTS[i + 1][1]) / 2]);
+    });
+    const distToBox = ([px, py], [bx, by, bw, bh]) =>
+      Math.hypot(Math.max(bx - px, 0, px - bx - bw), Math.max(by - py, 0, py - by - bh));
+
+    ERAS.forEach((era, e) => {
+      const [x, y, w, h] = REGIONS[e].rect;
+      const sub = `時代${e + 1} ${era.name}`;
+      // エリア名は、区画の中で道から一番離れた場所に置く
+      const lw = REGIONS[e].nm.length * 21 + sub.length * 12 + 24, lh = 24;
+      let label = null, best = -1;
+      for (let by = y + 8; by <= y + h - lh - 8; by += 6) {
+        for (let bx = x + 8; bx <= x + w - lw - 8; bx += 6) {
+          const gap = Math.min(...busy.map(p => distToBox(p, [bx, by, lw, lh])));
+          if (gap > best) { best = gap; label = [bx, by, lw, lh]; }
+        }
+      }
+
+      regions += `<g class="region ${e === CURRENT_ERA ? "cur" : ""}">
+        <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="22"
+          style="fill:color-mix(in srgb, var(--${era.line}) 16%, transparent);stroke:var(--${era.line})"/>
+        <text x="${label[0]}" y="${label[1] + 19}">${REGIONS[e].nm} <tspan>${sub}</tspan></text>
+      </g>`;
+      // 飾りの記号を、道とエリア名に重ならない場所に散らす
+      const placed = [];
+      for (let k = 0; k < 80 && placed.length < 7; k++) {
+        const dx = x + 16 + rand() * (w - 32), dy = y + 18 + rand() * (h - 30);
+        const far = (list, min) => list.every(([px, py]) => Math.hypot(px - dx, py - dy) > min);
+        if (far(busy, 36) && far(placed, 30) && distToBox([dx, dy], label) > 14) placed.push([dx, dy]);
+      }
+      deco += placed.map(([dx, dy]) => `<text x="${dx}" y="${dy}" text-anchor="middle" dominant-baseline="middle">${REGIONS[e].deco}</text>`).join("");
+    });
+    g(".regions").innerHTML = regions;
+    g(".deco").innerHTML = deco;
+
+    // マスとコマ
+    host.querySelector(".tiles").innerHTML = MAP_PTS.map(([x, y], i) => {
+      const type = typeAt(i), t = TYPES[type];
+      return `<div class="tile t-${type} ${t.special ? "special" : ""}" data-i="${i}" title="${i + 1}マス目 ${t.nm}"
+        style="left:${x / 10}%;top:${y / 6.2}%;--c:var(--${t.c})"><span class="no">${i + 1}</span><span>${t.g}</span></div>`;
+    }).join("");
+    host.querySelector(".pieces").innerHTML = PLAYERS.map((p, k) =>
+      `<div class="piece ${p.turn ? "turn" : ""} ${p.resting ? "rest" : ""}" data-p="${k}" style="--pc:var(${p.c})" title="${p.nm}">${p.nm[0]}</div>`).join("");
+  }
+
+  function updateMap() {
+    const host = $("#boardE");
+    host.querySelectorAll(".tile").forEach(t => t.classList.toggle("passed", +t.dataset.i < me().pos));
+    host.querySelectorAll(".piece").forEach(el => {
+      const p = PLAYERS[+el.dataset.p];
+      const same = PLAYERS.filter(q => q.pos === p.pos);
+      const k = same.indexOf(p), n = same.length;
+      const [x, y] = MAP_PTS[p.pos];
+      el.style.left = `calc(${x / 10}% + ${(k - (n - 1) / 2) * 14}px)`;
+      el.style.top = `calc(${y / 6.2}% - 8px)`;
+      el.style.zIndex = k + 1;
+    });
+  }
+  mountMap($("#boardE"));
+
+  // ---- 描画・サイコロ ----
+  function layoutAll() { BOARDS.forEach(layoutBoard); renderAscii(); updateMap(); }
+  window.addEventListener("resize", layoutAll);
+  layoutAll();
+  if (document.fonts) document.fonts.ready.then(layoutAll);
+
+  let rolling = false;
+  $("#roll").addEventListener("click", async () => {
+    if (rolling) return;
+    rolling = true;
+    $("#roll").disabled = true;
+    for (let k = 0; k < 8; k++) { $("#rolled").textContent = "出目 " + (1 + Math.floor(Math.random() * 6)); await sleep(70); }
+    const n = 1 + Math.floor(Math.random() * 6);
+    $("#rolled").textContent = "出目 " + n;
+    const pieces = () => document.querySelectorAll('.piece[data-p="0"]');
+    pieces().forEach(el => el.classList.remove("turn"));
+    for (let s = 0; s < n && me().pos < 39; s++) {
+      me().pos++;
+      pieces().forEach(el => { el.classList.remove("hop"); void el.offsetWidth; el.classList.add("hop"); });
+      layoutAll();
+      await sleep(240);
+    }
+    pieces().forEach(el => el.classList.add("turn"));
+    $("#roll").disabled = false;
+    rolling = false;
+  });
+  $("#reset").addEventListener("click", () => { me().pos = START_POS; $("#rolled").textContent = ""; layoutAll(); });
+
+  document.addEventListener("keydown", e => {
+    if (e.key.toLowerCase() !== "t") return;
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+  });
+</script>
+</body>
+</html>
